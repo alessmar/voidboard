@@ -1,4 +1,4 @@
-# 🌌 VoidBoard
+# VoidBoard
 
 A high-performance, single-file personal dashboard designed to be your browser's "Command Center." Built with **Alpine.js** and **Tailwind CSS**, it runs entirely in the browser with **zero backend**, no Docker, and no complex setup.
 
@@ -6,7 +6,7 @@ A high-performance, single-file personal dashboard designed to be your browser's
 ![Pure HTML](https://img.shields.io/badge/Zero--Backend-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-## 🧩 Philosophy: An Opinionated Workspace
+## Overview
 
 **VoidBoard** is not meant to be a one-size-fits-all dashboard engine. It is a highly **opinionated** dashboard, built entirely around my specific preferences. 
 
