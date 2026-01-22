@@ -37,7 +37,7 @@ If your workflow involves deep focus sessions while keeping a pulse on the marke
 
 1. **Clone the repo:**
    ```bash
-   git clone [https://github.com/yourusername/VoidBoard.git](https://github.com/yourusername/VoidBoard.git)
+   git clone https://github.com/alessmar/voidboard.git
    ```
    
 2. **Launch:** Simply double-click index.html to open it in any modern browser.
