@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Command Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script
+      defer
+      src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <style>
+      body {
+        background-color: #0f172a;
+        color: #f8fafc;
+      }
+      [x-cloak] {
+        display: none !important;
+      }
+
+      /* Hide number arrows */
+      input::-webkit-outer-spin-button,
+      input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      input[type="number"] {
+        -moz-appearance: textfield;
+      }
+
+      .card:hover {
+        transform: translateY(-4px);
+        transition: all 0.2s;
+        border-color: #3b82f6;
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #334155;
+        border-radius: 10px;
+      }
+      .modal-bg {
+        backdrop-filter: blur(4px);
+        background-color: rgba(0, 0, 0, 0.7);
+      }
+
+      /* Tooltip Style */
+      .tooltip-box {
+        visibility: hidden;
+        opacity: 0;
+        transition: opacity 0.2s;
+        position: absolute;
+        bottom: 125%;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .has-tooltip:hover .tooltip-box {
+        visibility: visible;
+        opacity: 1;
+      }
+    </style>
+  </head>
+  <body class="p-4 md:p-10">
+    <div x-data="dashboard()" x-init="init()" x-cloak class="max-w-7xl mx-auto">
+      <div
+        x-show="showStockModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg"
+        x-transition
+      >
+        <div
+          class="bg-slate-800 border border-slate-700 w-full max-w-sm p-6 rounded-2xl shadow-2xl"
+          @click.away="showStockModal = false"
+        >
+          <h3 class="text-lg font-bold mb-1">Add Stock Ticker</h3>
+          <p class="text-xs text-slate-400 mb-4">
+            Enter symbol (e.g., AAPL, NVDA)
+          </p>
+          <input
+            type="text"
+            x-model="newTicker"
+            @keyup.enter="confirmAddStock"
+            class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white uppercase focus:ring-2 focus:ring-blue-500 focus:outline-none mb-4"
+            placeholder="AAPL"
+            autofocus
+          />
+          <div class="flex space-x-3">
+            <button
+              @click="showStockModal = false"
+              class="flex-1 px-4 py-2 bg-slate-700 rounded-lg text-sm font-bold"
+            >
+              Cancel
+            </button>
+            <button
+              @click="confirmAddStock"
+              class="flex-1 px-4 py-2 bg-blue-600 rounded-lg text-sm font-bold"
+            >
+              Add
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-3 mb-8 text-sm font-medium">
+        <div
+          class="bg-slate-800/80 border border-slate-700 px-4 py-2 rounded-xl flex items-center space-x-3"
+        >
+          <span
+            class="text-emerald-400 font-mono"
+            x-text="ip || '---.---.---.---'"
+          ></span>
+          <span class="text-slate-600">|</span>
+          <a
+            :href="mapUrl"
+            target="_blank"
+            class="text-blue-400 uppercase text-[10px] tracking-widest font-bold hover:underline"
+            x-text="city"
+          ></a>
+        </div>
+
+        <div
+          class="bg-slate-800/80 border border-slate-700 px-4 py-2 rounded-xl flex items-center space-x-4"
+        >
+          <div class="flex items-center space-x-2">
+            <span
+              :class="batteryCharging ? 'text-yellow-400' : 'text-emerald-400'"
+              x-text="batteryCharging ? '⚡' : '🔋'"
+            ></span>
+            <span
+              class="text-white font-mono"
+              x-text="batterySupported ? batteryLevel + '%' : 'N/A'"
+            ></span>
+          </div>
+          <span class="text-slate-600">|</span>
+          <span
+            class="text-white font-mono uppercase text-[10px]"
+            x-text="connection"
+          ></span>
+        </div>
+
+        <div
+          class="bg-slate-800/80 border border-slate-700 px-4 py-2 rounded-xl flex items-center space-x-2 ml-auto"
+        >
+          <span
+            class="text-slate-200 font-mono text-base"
+            x-text="currentTime"
+          ></span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+        <div class="lg:col-span-8 space-y-6">
+          <h1 class="text-4xl font-black tracking-tighter italic uppercase">
+            Dashboard<span class="text-blue-500">_</span>
+          </h1>
+          <input
+            type="text"
+            x-model="search"
+            placeholder="Search services..."
+            class="w-full bg-slate-800 border border-slate-700 rounded-xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <template x-for="item in filteredServices" :key="item.name">
+              <a
+                :href="item.url"
+                target="_blank"
+                class="card block p-4 bg-slate-800 border border-slate-700 rounded-xl transition-all shadow-lg"
+              >
+                <div class="flex items-center space-x-3">
+                  <div class="overflow-hidden">
+                    <h2
+                      class="text-sm font-bold text-white truncate"
+                      x-text="item.name"
+                    ></h2>
+                    <p
+                      class="text-[10px] text-slate-500 truncate"
+                      x-text="item.description"
+                    ></p>
+                  </div>
+                </div>
+              </a>
+            </template>
+          </div>
+        </div>
+
+        <div class="lg:col-span-4 space-y-6">
+          <div
+            class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-xl"
+          >
+            <div class="flex justify-between items-center mb-4">
+              <h3
+                class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
+              >
+                Market Watch
+              </h3>
+              <button
+                @click="showStockModal = true; newTicker = ''"
+                class="bg-blue-600/20 text-blue-400 px-2 py-0.5 rounded text-[10px] font-bold hover:bg-blue-600/40 uppercase"
+              >
+                + Add Stock
+              </button>
+            </div>
+            <div class="space-y-2">
+              <template x-for="(s, index) in stocks" :key="index">
+                <div
+                  class="flex justify-between items-center bg-slate-900/40 p-2.5 rounded-lg border border-slate-700/50"
+                >
+                  <div>
+                    <span
+                      class="text-xs font-bold text-slate-200 uppercase block leading-none"
+                      x-text="s.symbol"
+                    ></span>
+                    <span
+                      class="text-[9px] font-mono mt-0.5 inline-block"
+                      :class="s.change >= 0 ? 'text-emerald-500' : 'text-red-500'"
+                      x-text="(s.change >= 0 ? '+' : '') + s.change + '%'"
+                    ></span>
+                  </div>
+                  <div class="flex items-center space-x-4">
+                    <span
+                      class="font-mono text-xs font-bold"
+                      x-text="'$' + (s.price || '...')"
+                    ></span>
+                    <button
+                      @click="removeStock(index)"
+                      class="text-slate-600 hover:text-red-500 transition-colors"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-3.5 w-3.5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <div
+            class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-xl"
+          >
+            <div class="flex justify-between items-center mb-4">
+              <h3
+                class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
+                x-text="isBreak ? 'Break' : 'Focus'"
+              ></h3>
+
+              <div
+                class="flex items-center space-x-1 bg-slate-900 px-2 py-1 rounded"
+              >
+                <div class="relative has-tooltip">
+                  <input
+                    type="number"
+                    x-model.number="pomoMinutes"
+                    class="w-5 bg-transparent text-blue-400 text-[10px] font-bold focus:outline-none text-center"
+                  />
+                  <span
+                    class="tooltip-box bg-slate-700 text-white text-[9px] px-2 py-1 rounded shadow-xl whitespace-nowrap"
+                    >Work Duration</span
+                  >
+                </div>
+
+                <span class="text-slate-700 text-[10px]">/</span>
+
+                <div class="relative has-tooltip">
+                  <input
+                    type="number"
+                    x-model.number="breakMinutes"
+                    class="w-5 bg-transparent text-emerald-400 text-[10px] font-bold focus:outline-none text-center"
+                  />
+                  <span
+                    class="tooltip-box bg-slate-700 text-white text-[9px] px-2 py-1 rounded shadow-xl whitespace-nowrap"
+                    >Break Duration</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="text-center">
+              <div
+                class="text-5xl font-mono font-black mb-4 tracking-tighter"
+                x-text="formatPomo(pomoSeconds)"
+              ></div>
+              <div class="flex space-x-2">
+                <button
+                  @click="togglePomo"
+                  class="flex-1 py-2 rounded-lg text-xs font-bold transition-all"
+                  :class="pomoRunning ? 'bg-amber-600' : 'bg-blue-600'"
+                  x-text="pomoRunning ? 'Pause' : 'Start'"
+                ></button>
+                <button
+                  @click="resetPomo"
+                  class="px-4 py-2 bg-slate-700 rounded-lg text-xs font-bold border border-slate-600"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-xl"
+          >
+            <h3
+              class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4"
+            >
+              Hacker News
+            </h3>
+            <div
+              class="space-y-4 max-h-48 overflow-y-auto custom-scrollbar pr-2"
+            >
+              <template x-for="news in hnStories" :key="news.id">
+                <a :href="news.url" target="_blank" class="block group">
+                  <p
+                    class="text-xs text-slate-300 group-hover:text-blue-400 leading-tight transition-colors"
+                    x-text="news.title"
+                  ></p>
+                  <div
+                    class="flex space-x-2 mt-1 text-[9px] text-slate-500 font-mono"
+                  >
+                    <span x-text="news.score + 'pts'"></span>
+                    <span x-text="'by ' + news.by"></span>
+                  </div>
+                </a>
+              </template>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer
+        class="mt-auto py-6 text-center text-[10px] text-slate-500 font-medium tracking-widest uppercase opacity-60"
+      >
+        Made with <span class="text-red-500 animate-pulse">❤</span> using Gemini
+        3 Flash
+      </footer>
+    </div>
+
+    <script>
+      function dashboard() {
+        return {
+          search: "",
+          ip: "",
+          temp: null,
+          weatherIcon: "☁️",
+          city: "Locating...",
+          mapUrl: "#",
+          currentTime: "",
+          batteryLevel: 0,
+          batteryCharging: false,
+          batterySupported: false,
+          connection: "Online",
+          showStockModal: false,
+          newTicker: "",
+          stocks: JSON.parse(localStorage.getItem("dash_stocks")) || [
+            { symbol: "AAPL", price: 0, change: 0 },
+          ],
+          hnStories: [],
+          pomoMinutes: 25,
+          breakMinutes: 5,
+          pomoSeconds: 1500,
+          pomoRunning: false,
+          isBreak: false,
+
+          services: [
+            {
+              name: "Jellyfin",
+              url: "http://192.168.1.2:8096",
+              description: "Video streaming",
+            },
+            {
+              name: "Wealthfolio",
+              url: "http://192.168.1.2:8088",
+              description: "Portfolio manager",
+            },
+            {
+              name: "BentoPDF",
+              url: "http://192.168.1.2:8585",
+              description: "PDF Toolkit",
+            },
+            {
+              name: "Czkawka",
+              url: "http://192.168.1.2:5800",
+              description: "Image dedup",
+            },
+            {
+              name: "Portainer",
+              url: "http://192.168.1.2:9000",
+              description: "Container manager",
+            },
+            {
+              name: "Beszel",
+              url: "http://192.168.178.130:8090",
+              description: "System monitor",
+            },
+          ],
+
+          async init() {
+            this.updateTime();
+            setInterval(() => this.updateTime(), 1000);
+            this.fetchHN();
+            this.updateMarket();
+            setInterval(() => {
+              this.fetchHN();
+              this.updateMarket();
+            }, 60000);
+
+            // Battery API handling
+            if (navigator.getBattery) {
+              try {
+                const b = await navigator.getBattery();
+                this.batterySupported = true;
+                const updateB = () => {
+                  this.batteryLevel = Math.round(b.level * 100);
+                  this.batteryCharging = b.charging;
+                };
+                b.addEventListener("levelchange", updateB);
+                b.addEventListener("chargingchange", updateB);
+                updateB();
+              } catch (e) {
+                this.batterySupported = false;
+              }
+            }
+
+            this.connection = navigator.connection
+              ? navigator.connection.effectiveType.toUpperCase()
+              : "ONLINE";
+
+            fetch("https://api.ipify.org?format=json")
+              .then((r) => r.json())
+              .then((d) => (this.ip = d.ip));
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+              const { latitude, longitude } = pos.coords;
+              this.mapUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+              const geo = await fetch(
+                `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`,
+              ).then((r) => r.json());
+              this.city = geo.city || geo.locality || "Local Area";
+              const w = await fetch(
+                `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`,
+              ).then((r) => r.json());
+              this.temp = Math.round(w.current_weather.temperature);
+              this.weatherIcon = this.getWeatherEmoji(
+                w.current_weather.weathercode,
+              );
+            });
+
+            this.$watch("pomoMinutes", (v) => {
+              if (!this.pomoRunning) this.pomoSeconds = v * 60;
+            });
+          },
+
+          // Stocks
+          async updateMarket() {
+            const proxy = "https://corsproxy.io/?";
+            this.stocks.forEach(async (s, i) => {
+              try {
+                const target = `https://query1.finance.yahoo.com/v8/finance/chart/${s.symbol}?interval=1m&range=1d`;
+                const res = await fetch(
+                  proxy + encodeURIComponent(target),
+                ).then((r) => r.json());
+                if (res.chart.result) {
+                  const meta = res.chart.result[0].meta;
+                  this.stocks[i].price = meta.regularMarketPrice.toFixed(2);
+                  const pc = meta.previousClose;
+                  this.stocks[i].change = (
+                    ((meta.regularMarketPrice - pc) / pc) *
+                    100
+                  ).toFixed(2);
+                }
+              } catch (e) {
+                this.stocks[i].price = "ERR";
+              }
+            });
+          },
+          confirmAddStock() {
+            let t = this.newTicker.trim().toUpperCase();
+            if (t) {
+              this.stocks.push({ symbol: t, price: 0, change: 0 });
+              this.saveStocks();
+              this.updateMarket();
+              this.showStockModal = false;
+            }
+          },
+          removeStock(i) {
+            this.stocks.splice(i, 1);
+            this.saveStocks();
+          },
+          saveStocks() {
+            localStorage.setItem("dash_stocks", JSON.stringify(this.stocks));
+          },
+
+          // Pomodoro
+          togglePomo() {
+            if (this.pomoRunning) {
+              clearInterval(this.pomoInterval);
+              this.pomoRunning = false;
+            } else {
+              this.pomoRunning = true;
+              this.pomoInterval = setInterval(() => {
+                if (this.pomoSeconds > 0) this.pomoSeconds--;
+                else {
+                  this.playAlarm();
+                  this.isBreak = !this.isBreak;
+                  this.pomoSeconds =
+                    (this.isBreak ? this.breakMinutes : this.pomoMinutes) * 60;
+                }
+              }, 1000);
+            }
+          },
+          resetPomo() {
+            clearInterval(this.pomoInterval);
+            this.pomoRunning = false;
+            this.pomoSeconds = this.pomoMinutes * 60;
+            this.isBreak = false;
+          },
+          formatPomo(s) {
+            return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
+          },
+          playAlarm() {
+            const ctx = new AudioContext();
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.connect(g);
+            g.connect(ctx.destination);
+            o.start();
+            o.stop(ctx.currentTime + 1);
+          },
+
+          // News
+          async fetchHN() {
+            try {
+              const ids = await fetch(
+                "https://hacker-news.firebaseio.com/v0/topstories.json",
+              ).then((r) => r.json());
+              this.hnStories = await Promise.all(
+                ids
+                  .slice(0, 5)
+                  .map((id) =>
+                    fetch(
+                      `https://hacker-news.firebaseio.com/v0/item/${id}.json`,
+                    ).then((r) => r.json()),
+                  ),
+              );
+            } catch (e) {}
+          },
+
+          updateTime() {
+            this.currentTime = new Date().toLocaleTimeString("en-GB", {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+              hour12: false,
+            });
+          },
+          getWeatherEmoji(c) {
+            const m = { 0: "☀️", 1: "🌤️", 3: "☁️", 61: "🌧️", 95: "⛈️" };
+            return m[c] || "☁️";
+          },
+          get filteredServices() {
+            return this.services.filter((s) =>
+              s.name.toLowerCase().includes(this.search.toLowerCase()),
+            );
+          },
+        };
+      }
+    </script>
+  </body>
+</html>
