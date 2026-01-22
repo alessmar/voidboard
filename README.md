@@ -8,7 +8,7 @@ A high-performance, single-file personal dashboard designed to be your browser's
 
 ## 🧩 Philosophy: An Opinionated Workspace
 
-**VoidBoard** is not meant to be a one-size-fits-all dashboard engine. It is a highly **opinionated command center** curated for a specific "Power User" workflow. 
+**VoidBoard** is not meant to be a one-size-fits-all dashboard engine. It is a highly **opinionated** dashboard, built entirely around my specific preferences. 
 
 While other projects focus on exhaustive service monitoring, VoidBoard is built for users who value:
 1. **Focus & Productivity** (Built-in Pomodoro)
