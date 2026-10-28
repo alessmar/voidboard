@@ -4,15 +4,150 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>VoidBoard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // Apply the saved theme and layout size before first paint to avoid a flash
+      try {
+        document.documentElement.dataset.theme =
+          JSON.parse(localStorage.getItem("dash_theme")) || "dark";
+        document.documentElement.dataset.density =
+          JSON.parse(localStorage.getItem("dash_density")) === "compact" ? "compact" : "standard";
+      } catch {}
+    </script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.3/dist/index.global.js"
+      integrity="sha384-2ql948lIdLcGEE0/qxNiudyTjgauA3RDJERu5xW75kFCvSl5a9odyQYCb6tEjnmB"
+      crossorigin="anonymous"
+    ></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/gridstack@14.0.0/dist/gridstack.min.css"
+      integrity="sha384-XCzaytXkt/Mt4Vx1txhYI7wJGYtKckKTERRsWTwoAjEbMHnPP/hGxaIbv24wfHYD"
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://cdn.jsdelivr.net/npm/gridstack@14.0.0/dist/gridstack-all.js"
+      integrity="sha384-GBkUrhOKxgPbZIG3VtF5zhJEjcFxnZQDQVkU0lKEp8/ZArONSdV0fhE7MeJp2000"
+      crossorigin="anonymous"
+    ></script>
     <script
       defer
-      src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"
+      src="https://unpkg.com/alpinejs@3.17.5/dist/cdn.min.js"
+      integrity="sha384-FYLKjwG3aohNhNZoVG8sY/5ntunm+MqylL90Q+rT3OM7AwV9/BKFjk/RjoIpIgsI"
+      crossorigin="anonymous"
     ></script>
     <style>
+      :root,
+      :root[data-theme="dark"] {
+        --bg: 15 23 42;
+        --fg: 248 250 252;
+        --white: 255 255 255;
+        --slate-200: 226 232 240;
+        --slate-300: 203 213 225;
+        --slate-400: 148 163 184;
+        --slate-500: 100 116 139;
+        --slate-600: 71 85 105;
+        --slate-700: 51 65 85;
+        --slate-800: 30 41 59;
+        --slate-900: 15 23 42;
+        --blue-400: 96 165 250;
+        --blue-500: 59 130 246;
+        --blue-600: 37 99 235;
+        --emerald-400: 52 211 153;
+        --emerald-500: 16 185 129;
+      }
+      :root[data-theme="light"] {
+        --bg: 241 245 249;
+        --fg: 15 23 42;
+        --white: 15 23 42;
+        --slate-200: 30 41 59;
+        --slate-300: 51 65 85;
+        --slate-400: 71 85 105;
+        --slate-500: 100 116 139;
+        --slate-600: 148 163 184;
+        --slate-700: 203 213 225;
+        --slate-800: 255 255 255;
+        --slate-900: 241 245 249;
+        --blue-400: 29 78 216;
+        --blue-500: 37 99 235;
+        --blue-600: 37 99 235;
+        --emerald-400: 5 150 105;
+        --emerald-500: 5 150 105;
+      }
+      :root[data-theme="midnight"] {
+        --bg: 9 9 15;
+        --fg: 245 245 252;
+        --white: 255 255 255;
+        --slate-200: 226 226 238;
+        --slate-300: 196 196 214;
+        --slate-400: 148 148 175;
+        --slate-500: 104 104 135;
+        --slate-600: 70 70 98;
+        --slate-700: 42 42 62;
+        --slate-800: 22 22 34;
+        --slate-900: 9 9 15;
+        --blue-400: 167 139 250;
+        --blue-500: 139 92 246;
+        --blue-600: 124 58 237;
+        --emerald-400: 52 211 153;
+        --emerald-500: 16 185 129;
+      }
+      :root[data-theme="forest"] {
+        --bg: 10 20 16;
+        --fg: 240 250 245;
+        --white: 255 255 255;
+        --slate-200: 220 232 226;
+        --slate-300: 190 210 200;
+        --slate-400: 140 168 154;
+        --slate-500: 100 128 114;
+        --slate-600: 66 92 80;
+        --slate-700: 40 60 52;
+        --slate-800: 22 36 30;
+        --slate-900: 10 20 16;
+        --blue-400: 52 211 153;
+        --blue-500: 16 185 129;
+        --blue-600: 5 150 105;
+        --emerald-400: 110 231 183;
+        --emerald-500: 52 211 153;
+      }
       body {
-        background-color: #0f172a;
-        color: #f8fafc;
+        background-color: rgb(var(--bg));
+        color: rgb(var(--fg));
+      }
+      /* GridStack: cards draw their own box, the resize handle and drop placeholder follow the theme */
+      .grid-stack > .grid-stack-item > .grid-stack-item-content {
+        overflow: visible;
+      }
+      /* GridStack's own arrow icon (it is rotated -45deg by the library), used as a mask so it takes the theme color */
+      .grid-stack > .grid-stack-item > .ui-resizable-se {
+        background-image: none;
+        background-color: rgb(var(--slate-500));
+        -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' viewBox='0 0 20 20'><path d='m10 3 2 2H8l2-2v14l-2-2h4l-2 2'/></svg>") center / contain no-repeat;
+        mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' viewBox='0 0 20 20'><path d='m10 3 2 2H8l2-2v14l-2-2h4l-2 2'/></svg>") center / contain no-repeat;
+        opacity: 0;
+        transition: opacity 0.15s;
+      }
+      .grid-stack > .grid-stack-item:hover > .ui-resizable-se {
+        opacity: 0.9;
+      }
+      .grid-stack-placeholder > .placeholder-content {
+        background: rgb(var(--blue-500) / 0.12);
+        border: 2px dashed rgb(var(--blue-500) / 0.5);
+        border-radius: 1rem;
+      }
+      /* Compact layout: tighter card padding (the grid itself gets a smaller row height and gap in JS) */
+      :root[data-density="compact"] .grid-stack-item-content > div {
+        padding: 1rem 0.75rem 0.75rem;
+      }
+      :root[data-density="compact"] .grid-stack-item-content > a.card {
+        padding: 0.5rem 2.25rem 0.5rem 0.75rem;
+      }
+      :root[data-density="compact"] .grid-stack-item-content button.absolute {
+        top: 0.25rem;
+      }
+      /* Filled buttons keep light text in every theme */
+      .bg-blue-600,
+      .bg-amber-600 {
+        color: #fff !important;
       }
       [x-cloak] {
         display: none !important;
@@ -31,13 +166,13 @@
       .card:hover {
         transform: translateY(-4px);
         transition: all 0.2s;
-        border-color: #3b82f6;
+        border-color: rgb(var(--blue-500));
       }
       .custom-scrollbar::-webkit-scrollbar {
         width: 4px;
       }
       .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: #334155;
+        background: rgb(var(--slate-700));
         border-radius: 10px;
       }
       .modal-bg {
@@ -45,24 +180,56 @@
         background-color: rgba(0, 0, 0, 0.7);
       }
 
-      /* Tooltip Style */
-      .tooltip-box {
-        visibility: hidden;
-        opacity: 0;
-        transition: opacity 0.2s;
-        position: absolute;
-        bottom: 125%;
-        left: 50%;
-        transform: translateX(-50%);
+    </style>
+    <style type="text/tailwindcss">
+      /* Colors come from the CSS variables of the active theme (space-separated RGB channels) */
+      @theme inline {
+        --color-white: rgb(var(--white));
+        --color-slate-200: rgb(var(--slate-200));
+        --color-slate-300: rgb(var(--slate-300));
+        --color-slate-400: rgb(var(--slate-400));
+        --color-slate-500: rgb(var(--slate-500));
+        --color-slate-600: rgb(var(--slate-600));
+        --color-slate-700: rgb(var(--slate-700));
+        --color-slate-800: rgb(var(--slate-800));
+        --color-slate-900: rgb(var(--slate-900));
+        --color-blue-400: rgb(var(--blue-400));
+        --color-blue-500: rgb(var(--blue-500));
+        --color-blue-600: rgb(var(--blue-600));
+        --color-emerald-400: rgb(var(--emerald-400));
+        --color-emerald-500: rgb(var(--emerald-500));
+        /* shades the page used in Tailwind 3, kept so the look does not change */
+        --color-red-500: #ef4444;
+        --color-amber-500: #f59e0b;
+        --color-amber-600: #d97706;
       }
-      .has-tooltip:hover .tooltip-box {
-        visibility: visible;
-        opacity: 1;
+      /* Tailwind 4 changed two defaults: keep the Tailwind 3 font stack and its fixed line heights
+         (v4 stores line heights as ratios, so a child with another font size inherits another line height) */
+      @theme {
+        --default-font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        --text-xs--line-height: 1rem;
+        --text-sm--line-height: 1.25rem;
+        --text-lg--line-height: 1.75rem;
+        --text-5xl--line-height: 1;
+      }
+      /* Tailwind 4 resets: buttons are no longer pointers, placeholders follow the text color */
+      @layer base {
+        button:not(:disabled),
+        [role="button"]:not(:disabled) {
+          cursor: pointer;
+        }
+        input::placeholder {
+          color: #9ca3af;
+        }
+      }
+      .menu-item {
+        @apply w-full flex items-center space-x-2 px-3 py-2 rounded-lg text-xs text-slate-300 hover:bg-slate-700 hover:text-white transition-colors;
       }
     </style>
   </head>
-  <body class="p-4 md:p-10">
-    <div x-data="dashboard()" x-init="init()" x-cloak class="max-w-7xl mx-auto">
+  <body>
+    <div x-data="dashboard()" x-cloak class="min-h-screen flex flex-col">
       <div
         x-show="showStockModal"
         class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg"
@@ -72,18 +239,27 @@
           class="bg-slate-800 border border-slate-700 w-full max-w-sm p-6 rounded-2xl shadow-2xl"
           @click.away="showStockModal = false"
         >
-          <h3 class="text-lg font-bold mb-1">Add Stock Ticker</h3>
+          <h3 class="text-lg font-bold mb-1">Add Stock or Crypto</h3>
           <p class="text-xs text-slate-400 mb-4">
-            Enter symbol (e.g., AAPL, NVDA)
+            Enter a symbol (e.g., AAPL, NVDA) or a crypto pair (e.g., BTC / USD)
           </p>
           <input
             type="text"
             x-model="newTicker"
             @keyup.enter="confirmAddStock"
-            class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white uppercase focus:ring-2 focus:ring-blue-500 focus:outline-none mb-4"
+            class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white uppercase focus:ring-2 focus:ring-blue-500 focus:outline-hidden mb-4"
             placeholder="AAPL"
             autofocus
           />
+          <div class="flex flex-wrap gap-2 mb-4">
+            <template x-for="pair in cryptoQuick" :key="pair">
+              <button
+                @click="newTicker = pair; confirmAddStock()"
+                class="bg-blue-600/20 text-blue-400 px-2 py-0.5 rounded-sm text-[10px] font-bold hover:bg-blue-600/40"
+                x-text="pair"
+              ></button>
+            </template>
+          </div>
           <div class="flex space-x-3">
             <button
               @click="showStockModal = false"
@@ -101,9 +277,147 @@
         </div>
       </div>
 
-      <div class="flex flex-wrap gap-3 mb-8 text-sm font-medium">
+      <div
+        x-show="showServiceModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg"
+        x-transition
+      >
         <div
-          class="bg-slate-800/80 border border-slate-700 px-4 py-2 rounded-xl flex items-center space-x-3"
+          class="bg-slate-800 border border-slate-700 w-full max-w-sm p-6 rounded-2xl shadow-2xl"
+          @click.away="showServiceModal = false"
+        >
+          <h3
+            class="text-lg font-bold mb-4"
+            x-text="editingService ? 'Edit Service' : 'Add Service'"
+          ></h3>
+          <input
+            type="text"
+            x-model="newService.name"
+            class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:outline-hidden mb-3"
+            placeholder="Name"
+          />
+          <input
+            type="text"
+            x-model="newService.description"
+            class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:outline-hidden mb-3"
+            placeholder="Description"
+          />
+          <input
+            type="url"
+            x-model="newService.url"
+            @keyup.enter="confirmAddService"
+            class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:outline-hidden mb-3"
+            placeholder="https://..."
+          />
+          <div class="flex space-x-3 mt-1">
+            <button
+              @click="showServiceModal = false"
+              class="flex-1 px-4 py-2 bg-slate-700 rounded-lg text-sm font-bold"
+            >
+              Cancel
+            </button>
+            <button
+              @click="confirmAddService"
+              class="flex-1 px-4 py-2 bg-blue-600 rounded-lg text-sm font-bold"
+              x-text="editingService ? 'Save' : 'Add'"
+            ></button>
+          </div>
+        </div>
+      </div>
+
+      <div
+        x-show="widgetSettings"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg"
+        x-transition
+      >
+        <div
+          class="bg-slate-800 border border-slate-700 w-full max-w-sm p-6 rounded-2xl shadow-2xl"
+          @click.away="widgetSettings = null"
+        >
+          <h3 class="text-lg font-bold mb-4" x-text="settingsTitle()"></h3>
+          <template x-for="f in fieldsFor(widgetSettings)" :key="f[0]">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1" x-text="f[1]"></label>
+              <template x-if="f[2]">
+                <select
+                  x-model="settingsForm[f[0]]"
+                  class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:outline-hidden mb-3"
+                >
+                  <template x-for="o in f[2]" :key="o">
+                    <option :value="o" :selected="settingsForm[f[0]] === o" x-text="newsSources[o].name"></option>
+                  </template>
+                </select>
+              </template>
+              <template x-if="!f[2]">
+                <input
+                  type="number"
+                  x-model.number="settingsForm[f[0]]"
+                  min="1"
+                  :max="limitsFor(widgetSettings)[f[0]][1]"
+                  @keyup.enter="saveWidgetSettings()"
+                  class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:outline-hidden mb-3"
+                />
+              </template>
+            </div>
+          </template>
+          <div class="flex space-x-3 mt-1">
+            <button
+              @click="widgetSettings = null"
+              class="flex-1 px-4 py-2 bg-slate-700 rounded-lg text-sm font-bold"
+            >
+              Cancel
+            </button>
+            <button
+              @click="saveWidgetSettings()"
+              class="flex-1 px-4 py-2 bg-blue-600 rounded-lg text-sm font-bold"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div
+        x-show="showBeszelModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg"
+        x-transition
+      >
+        <div
+          class="bg-slate-800 border border-slate-700 w-full max-w-sm p-6 rounded-2xl shadow-2xl"
+          @click.away="showBeszelModal = false"
+        >
+          <h3 class="text-lg font-bold mb-1">Connect Beszel</h3>
+          <p class="text-xs text-slate-400 mb-4">
+            Use a read-only Beszel user that can see your systems. Only the login token is kept in this browser, never the password.
+          </p>
+          <input type="text" x-model="bzForm.url" placeholder="Hub address, e.g. http://beszel.local:8090" autocomplete="off" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:outline-hidden mb-3" />
+          <input type="email" x-model="bzForm.email" placeholder="Email" autocomplete="off" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:outline-hidden mb-3" />
+          <input type="password" x-model="bzForm.password" @keyup.enter="loginBeszel()" placeholder="Password" autocomplete="off" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:outline-hidden mb-3" />
+          <p x-show="bzLoginError" class="text-xs text-red-500 mb-3" x-text="bzLoginError"></p>
+          <div class="flex space-x-3 mt-1">
+            <button
+              @click="showBeszelModal = false"
+              class="flex-1 px-4 py-2 bg-slate-700 rounded-lg text-sm font-bold"
+            >
+              Cancel
+            </button>
+            <button
+              @click="loginBeszel()"
+              class="flex-1 px-4 py-2 bg-blue-600 rounded-lg text-sm font-bold"
+            >
+              Connect
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sticky top-0 z-30 bg-slate-900/80 backdrop-blur-sm border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 md:px-10 py-3 flex flex-wrap items-center gap-3 text-sm font-medium">
+          <span class="text-[26px] font-black tracking-tighter italic mr-3">
+            VoidBoard<span class="text-blue-500">_</span>
+          </span>
+        <div
+          class="self-stretch bg-slate-800/80 border border-slate-700 px-4 py-2 rounded-xl flex items-center space-x-3"
         >
           <span
             class="text-emerald-400 font-mono"
@@ -116,23 +430,60 @@
             class="text-blue-400 uppercase text-[10px] tracking-widest font-bold hover:underline"
             x-text="city"
           ></a>
+          <template x-if="temp !== null">
+            <span class="flex items-center space-x-3">
+              <span class="text-slate-600">|</span>
+              <span
+                class="flex items-center space-x-1.5 text-white font-mono text-[10px]"
+                :title="weatherLabel"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4 w-4 text-slate-300"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  x-html="weatherIcons[weatherLabel]"
+                ></svg>
+                <span x-text="tempText()"></span>
+              </span>
+            </span>
+          </template>
         </div>
 
         <div
-          class="bg-slate-800/80 border border-slate-700 px-4 py-2 rounded-xl flex items-center space-x-4"
+          x-show="(batterySupported && !batteryCharging) || connection"
+          class="self-stretch bg-slate-800/80 border border-slate-700 px-4 py-2 rounded-xl flex items-center gap-4"
         >
-          <div class="flex items-center space-x-2">
-            <span
-              :class="batteryCharging ? 'text-yellow-400' : 'text-emerald-400'"
-              x-text="batteryCharging ? '⚡' : '🔋'"
-            ></span>
-            <span
-              class="text-white font-mono"
-              x-text="batterySupported ? batteryLevel + '%' : 'N/A'"
-            ></span>
+          <div
+            x-show="batterySupported && !batteryCharging"
+            class="flex items-center space-x-2"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4 text-emerald-400"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="2" y="7" width="16" height="10" rx="2" />
+              <line x1="22" y1="11" x2="22" y2="13" />
+            </svg>
+            <span class="text-white font-mono" x-text="batteryLevel + '%'"></span>
           </div>
-          <span class="text-slate-600">|</span>
           <span
+            x-show="batterySupported && !batteryCharging && connection"
+            class="text-slate-600"
+            >|</span
+          >
+          <span
+            x-show="connection"
             class="text-white font-mono uppercase text-[10px]"
             x-text="connection"
           ></span>
@@ -142,32 +493,217 @@
           class="bg-slate-800/80 border border-slate-700 px-4 py-2 rounded-xl flex items-center space-x-2 ml-auto"
         >
           <span
-            class="text-slate-200 font-mono text-base"
+            class="text-slate-200 font-mono text-sm"
             x-text="currentTime"
           ></span>
+          <select
+            x-model="timezone"
+            @change="setTimezone()"
+            :title="tzOffset(timezone)"
+            class="bg-transparent text-slate-400 hover:text-blue-400 font-mono text-sm focus:outline-hidden cursor-pointer transition-colors"
+          >
+            <template x-for="tz in timezones" :key="tz">
+              <option :value="tz" x-text="tz" :title="tzOffset(tz)" class="bg-slate-800 text-slate-200"></option>
+            </template>
+          </select>
         </div>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
-        <div class="lg:col-span-8 space-y-6">
-          <h1 class="text-4xl font-black tracking-tighter italic uppercase">
-            Dashboard<span class="text-blue-500">_</span>
-          </h1>
+        <div class="relative self-stretch" @click.away="showMenu = false; showConfig = false; showWidgets = false; showTheme = false; showLayout = false; showTemp = false">
+          <button
+            @click="showMenu = !showMenu"
+            title="Menu"
+            class="h-full flex items-center bg-slate-800/80 border border-slate-700 px-3 py-2 rounded-xl text-slate-300 hover:text-blue-400 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </button>
+          <div
+            x-show="showMenu"
+            x-transition
+            class="absolute right-0 top-full mt-2 w-48 z-40 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl p-1"
+          >
+            <button
+              @click="showServiceModal = true; editingService = null; newService = { name: '', description: '', url: '' }; showMenu = false; showConfig = false; showWidgets = false; showTheme = false; showLayout = false; showTemp = false"
+              class="menu-item"
+            >
+              Add Service
+            </button>
+            <button
+              x-show="availableWidgets.length"
+              @click="showWidgets = !showWidgets"
+              class="menu-item"
+            >
+              <span class="flex-1 text-left">Add Widget</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-3.5 w-3.5 transition-transform"
+                :class="showWidgets && 'rotate-180'"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+            <div x-show="showWidgets && availableWidgets.length" class="pl-3">
+              <template x-for="id in availableWidgets" :key="id">
+                <button
+                  @click="addWidget(id)"
+                  class="menu-item"
+                  x-text="widgetNames[id]"
+                ></button>
+              </template>
+            </div>
+            <button @click="showTheme = !showTheme" class="menu-item">
+              <span class="flex-1 text-left">Theme</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-3.5 w-3.5 transition-transform"
+                :class="showTheme && 'rotate-180'"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+            <div x-show="showTheme" class="pl-3">
+              <template x-for="t in themes" :key="t">
+                <button
+                  @click="setTheme(t)"
+                  class="menu-item"
+                  :class="theme === t && 'text-blue-400!'"
+                  x-text="t"
+                  style="text-transform: capitalize"
+                ></button>
+              </template>
+            </div>
+            <button @click="showConfig = !showConfig" class="menu-item">
+              <span class="flex-1 text-left">Configuration</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-3.5 w-3.5 transition-transform"
+                :class="showConfig && 'rotate-180'"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+            <div x-show="showConfig" class="pl-3">
+              <button @click="showLayout = !showLayout" class="menu-item">
+                <span class="flex-1 text-left">Layout</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-3.5 w-3.5 transition-transform"
+                  :class="showLayout && 'rotate-180'"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+              <div x-show="showLayout" class="pl-3">
+                <template x-for="(label, d) in densities" :key="d">
+                  <button
+                    @click="setDensity(d)"
+                    class="menu-item"
+                    :class="density === d && 'text-blue-400!'"
+                    x-text="label"
+                  ></button>
+                </template>
+              </div>
+              <button @click="showTemp = !showTemp" class="menu-item">
+                <span class="flex-1 text-left">Temperature</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-3.5 w-3.5 transition-transform"
+                  :class="showTemp && 'rotate-180'"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+              <div x-show="showTemp" class="pl-3">
+                <template x-for="(label, u) in tempUnits" :key="u">
+                  <button
+                    @click="setTempUnit(u)"
+                    class="menu-item"
+                    :class="tempUnit === u && 'text-blue-400!'"
+                    x-text="label"
+                  ></button>
+                </template>
+              </div>
+              <button @click="exportConfig(); showMenu = false; showConfig = false; showWidgets = false; showTheme = false; showLayout = false; showTemp = false" class="menu-item">
+                Export
+              </button>
+              <button @click="$refs.importFile.click(); showMenu = false; showConfig = false; showWidgets = false; showTheme = false; showLayout = false; showTemp = false" class="menu-item">
+                Import
+              </button>
+            </div>
+          </div>
           <input
-            type="text"
-            x-model="search"
-            placeholder="Search services..."
-            class="w-full bg-slate-800 border border-slate-700 rounded-xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            x-ref="importFile"
+            type="file"
+            accept="application/json"
+            class="hidden"
+            @change="importConfig($event)"
           />
+        </div>
+        </div>
+      </nav>
 
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <template x-for="item in filteredServices" :key="item.name">
+      <div class="w-full max-w-7xl mx-auto p-4 md:p-10 flex-1 flex flex-col">
+      <div id="grid" class="grid-stack mb-8">
+        <template x-for="(item, i) in services" :key="item.id">
+          <div class="grid-stack-item" x-init="addService($el, item.id, i)">
+            <div class="grid-stack-item-content">
               <a
                 :href="item.url"
                 target="_blank"
-                class="card block p-4 bg-slate-800 border border-slate-700 rounded-xl transition-all shadow-lg"
+                draggable="false"
+                class="card relative block h-full p-4 bg-slate-800 border border-slate-700 rounded-xl transition-all shadow-lg"
               >
-                <div class="flex items-center space-x-3">
+                <button
+                  @click.prevent.stop="editService(item)"
+                  title="Edit service"
+                  class="absolute top-1.5 right-6 text-slate-600 hover:text-blue-400 transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x-html="icons.pencil"></svg>
+                </button>
+                <button
+                  @click.prevent.stop="removeService(item)"
+                  title="Remove service"
+                  class="absolute top-1.5 right-1.5 text-slate-600 hover:text-red-500 transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor" x-html="icons.x"></svg>
+                </button>
+                <div class="flex items-center space-x-3 h-full">
+                  <span
+                    class="h-2 w-2 rounded-full shrink-0"
+                    :class="{ up: 'bg-emerald-500', down: 'bg-red-500' }[status[item.url]] || 'bg-slate-600'"
+                    :title="status[item.url] === 'up' ? 'Reachable' : status[item.url] === 'down' ? 'Unreachable' : 'Checking...'"
+                  ></span>
                   <div class="overflow-hidden">
                     <h2
                       class="text-sm font-bold text-white truncate"
@@ -180,14 +716,67 @@
                   </div>
                 </div>
               </a>
-            </template>
+            </div>
           </div>
-        </div>
-
-        <div class="lg:col-span-4 space-y-6">
-          <div
-            class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-xl"
-          >
+        </template>
+        <template x-for="w in newsWidgets" :key="w.id">
+          <div class="grid-stack-item" x-init="addNews($el, w.id)">
+            <div class="grid-stack-item-content">
+              <div class="relative cursor-grab h-full overflow-y-auto custom-scrollbar bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-xl">
+                <button
+                  @click="openWidgetSettings(w.id)"
+                  title="Settings"
+                  class="absolute top-1.5 right-6 text-slate-600 hover:text-blue-400 transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x-html="icons.pencil"></svg>
+                </button>
+                <button
+                  @click="removeNews(w)"
+                  title="Remove widget"
+                  class="absolute top-1.5 right-1.5 text-slate-600 hover:text-red-500 transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor" x-html="icons.x"></svg>
+                </button>
+                <h3
+                  class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4"
+                  x-text="newsSources[w.source]?.name"
+                ></h3>
+                <p x-show="newsErrors[w.id]" class="text-xs text-red-500 mb-2" x-text="newsErrors[w.id]"></p>
+                <div class="flex flex-col gap-4">
+                  <template x-for="(n, i) in newsStories[w.id] || []" :key="i + '|' + n.id">
+                    <a :href="n.url" target="_blank" rel="noopener noreferrer" draggable="false" class="block group">
+                      <p
+                        class="text-xs text-slate-300 group-hover:text-blue-400 leading-tight transition-colors"
+                        x-text="n.title"
+                      ></p>
+                      <div class="mt-1 text-[9px] text-slate-500 font-mono" x-text="n.meta"></div>
+                    </a>
+                  </template>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+      <!-- widgets that are not shown wait here; syncWidgets() moves them into the grid -->
+      <div id="stash" hidden>
+        <div class="grid-stack-item" data-widget="market">
+          <div class="grid-stack-item-content">
+<div class="relative cursor-grab h-full overflow-y-auto custom-scrollbar bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-xl">
+            <button
+              @click="openWidgetSettings('market')"
+              title="Settings"
+              class="absolute top-1.5 right-6 text-slate-600 hover:text-blue-400 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x-html="icons.pencil"></svg>
+            </button>
+            <button
+              @click="toggleWidget('market')"
+              title="Remove widget"
+              class="absolute top-1.5 right-1.5 text-slate-600 hover:text-red-500 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor" x-html="icons.x"></svg>
+            </button>
             <div class="flex justify-between items-center mb-4">
               <h3
                 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
@@ -196,58 +785,114 @@
               </h3>
               <button
                 @click="showStockModal = true; newTicker = ''"
-                class="bg-blue-600/20 text-blue-400 px-2 py-0.5 rounded text-[10px] font-bold hover:bg-blue-600/40 uppercase"
+                class="bg-blue-600/20 text-blue-400 px-2 py-0.5 rounded-sm text-[10px] font-bold hover:bg-blue-600/40 uppercase"
               >
                 + Add Stock
               </button>
             </div>
-            <div class="space-y-2">
-              <template x-for="(s, index) in stocks" :key="index">
+            <div class="flex flex-col gap-2" @dragover.prevent @drop.prevent>
+              <template x-for="(s, index) in stocks" :key="s.symbol">
                 <div
-                  class="flex justify-between items-center bg-slate-900/40 p-2.5 rounded-lg border border-slate-700/50"
+                  x-show="fhConnected || parseCrypto(s.symbol)"
+                  :draggable="armedStock === s.symbol"
+                  @dragstart="stockDrag = s.symbol; $event.dataTransfer.effectAllowed = 'move'; $event.dataTransfer.setData('text/plain', s.symbol)"
+                  @dragover.prevent="moveStock(s.symbol)"
+                  @dragend="stockDrag = armedStock = null; saveStocks()"
+                  :class="stockDrag === s.symbol && 'opacity-40'"
+                  class="flex justify-between items-center gap-2 bg-slate-900/40 p-2.5 rounded-lg border border-slate-700/50"
                 >
-                  <div>
+                  <div class="flex items-center gap-2 min-w-0">
+                    <button
+                      type="button"
+                      title="Drag to reorder"
+                      @mousedown="armedStock = s.symbol"
+                      @mouseup="armedStock = null"
+                      class="shrink-0 cursor-grab text-slate-600 hover:text-slate-300 transition-colors"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <circle cx="9" cy="5" r="1" />
+                        <circle cx="9" cy="12" r="1" />
+                        <circle cx="9" cy="19" r="1" />
+                        <circle cx="15" cy="5" r="1" />
+                        <circle cx="15" cy="12" r="1" />
+                        <circle cx="15" cy="19" r="1" />
+                      </svg>
+                    </button>
+                    <div class="min-w-0">
                     <span
                       class="text-xs font-bold text-slate-200 uppercase block leading-none"
                       x-text="s.symbol"
+                    ></span>
+                    <span
+                      x-show="s.name"
+                      class="text-[9px] text-slate-500 block truncate mt-1 leading-none"
+                      x-text="s.name"
                     ></span>
                     <span
                       class="text-[9px] font-mono mt-0.5 inline-block"
                       :class="s.change >= 0 ? 'text-emerald-500' : 'text-red-500'"
                       x-text="(s.change >= 0 ? '+' : '') + s.change + '%'"
                     ></span>
+                    </div>
                   </div>
-                  <div class="flex items-center space-x-4">
+                  <div class="flex items-center space-x-4 shrink-0">
                     <span
                       class="font-mono text-xs font-bold"
-                      x-text="'$' + (s.price || '...')"
+                      x-text="currencySign(s) + (s.price || '...')"
                     ></span>
                     <button
                       @click="removeStock(index)"
                       class="text-slate-600 hover:text-red-500 transition-colors"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-3.5 w-3.5"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fill-rule="evenodd"
-                          d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                          clip-rule="evenodd"
-                        />
-                      </svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor" x-html="icons.x"></svg>
                     </button>
                   </div>
                 </div>
               </template>
             </div>
+            <button
+              x-show="!fhConnected && hasStocks"
+              @click="connectFinnhub()"
+              class="mt-3 w-full py-2 bg-blue-600 rounded-lg text-xs font-bold"
+            >
+              Connect Finnhub
+            </button>
+            <button
+              x-show="fhConnected"
+              @click="disconnectFinnhub()"
+              class="mt-3 text-[9px] text-slate-500 hover:text-red-500 transition-colors"
+            >
+              Disconnect
+            </button>
           </div>
-
-          <div
-            class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-xl"
-          >
+          </div>
+        </div>
+        <div class="grid-stack-item" data-widget="focus">
+          <div class="grid-stack-item-content">
+<div class="relative cursor-grab h-full bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-xl">
+            <button
+              @click="openWidgetSettings('focus')"
+              title="Settings"
+              class="absolute top-1.5 right-6 text-slate-600 hover:text-blue-400 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x-html="icons.pencil"></svg>
+            </button>
+            <button
+              @click="toggleWidget('focus')"
+              title="Remove widget"
+              class="absolute top-1.5 right-1.5 text-slate-600 hover:text-red-500 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor" x-html="icons.x"></svg>
+            </button>
             <div class="flex justify-between items-center mb-4">
               <h3
                 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
@@ -255,33 +900,12 @@
               ></h3>
 
               <div
-                class="flex items-center space-x-1 bg-slate-900 px-2 py-1 rounded"
+                class="flex items-center space-x-1 bg-slate-900 px-2 py-1 rounded-sm text-[10px] font-bold"
+                title="Focus / break minutes"
               >
-                <div class="relative has-tooltip">
-                  <input
-                    type="number"
-                    x-model.number="pomoMinutes"
-                    class="w-5 bg-transparent text-blue-400 text-[10px] font-bold focus:outline-none text-center"
-                  />
-                  <span
-                    class="tooltip-box bg-slate-700 text-white text-[9px] px-2 py-1 rounded shadow-xl whitespace-nowrap"
-                    >Work Duration</span
-                  >
-                </div>
-
-                <span class="text-slate-700 text-[10px]">/</span>
-
-                <div class="relative has-tooltip">
-                  <input
-                    type="number"
-                    x-model.number="breakMinutes"
-                    class="w-5 bg-transparent text-emerald-400 text-[10px] font-bold focus:outline-none text-center"
-                  />
-                  <span
-                    class="tooltip-box bg-slate-700 text-white text-[9px] px-2 py-1 rounded shadow-xl whitespace-nowrap"
-                    >Break Duration</span
-                  >
-                </div>
+                <span class="text-blue-400" x-text="pomoMinutes"></span>
+                <span class="text-slate-700">/</span>
+                <span class="text-emerald-400" x-text="breakMinutes"></span>
               </div>
             </div>
             <div class="text-center">
@@ -305,33 +929,243 @@
               </div>
             </div>
           </div>
-
-          <div
-            class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-xl"
-          >
+          </div>
+        </div>
+        <div class="grid-stack-item" data-widget="search">
+          <div class="grid-stack-item-content">
+<div class="relative cursor-grab h-full overflow-y-auto custom-scrollbar bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-xl">
+            <button
+              @click="showSearchHistory = !showSearchHistory"
+              title="Past searches"
+              class="absolute top-1.5 right-6 transition-colors"
+              :class="showSearchHistory ? 'text-blue-400' : 'text-slate-600 hover:text-blue-400'"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x-html="icons.clock"></svg>
+            </button>
+            <button
+              @click="toggleWidget('search')"
+              title="Remove widget"
+              class="absolute top-1.5 right-1.5 text-slate-600 hover:text-red-500 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor" x-html="icons.x"></svg>
+            </button>
             <h3
               class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4"
             >
-              Hacker News
+              Search
             </h3>
-            <div
-              class="space-y-4 max-h-48 overflow-y-auto custom-scrollbar pr-2"
+            <div class="flex items-center gap-2" x-show="!showSearchHistory">
+              <input
+                type="text"
+                x-model="searchQuery"
+                @keyup.enter="runSearch(searchQuery)"
+                placeholder="Ask Google AI Mode..."
+                class="flex-1 min-w-0 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+              />
+              <button
+                @click="runSearch(searchQuery)"
+                title="Search"
+                class="text-slate-400 hover:text-blue-400 transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x-html="icons.search"></svg>
+              </button>
+            </div>
+            <div x-show="showSearchHistory">
+              <p x-show="!searchHistory.length" class="text-xs text-slate-500">No searches yet</p>
+              <div class="flex flex-col gap-2">
+                <template x-for="q in searchHistory" :key="q">
+                  <button
+                    @click="runSearch(q)"
+                    class="text-left text-xs text-slate-200 hover:text-blue-500 truncate transition-colors"
+                    x-text="q"
+                  ></button>
+                </template>
+              </div>
+              <button
+                x-show="searchHistory.length"
+                @click="clearSearchHistory()"
+                class="mt-3 text-[9px] text-slate-500 hover:text-red-500 transition-colors"
+              >
+                Clear history
+              </button>
+            </div>
+          </div>
+          </div>
+        </div>
+        <div class="grid-stack-item" data-widget="todo">
+          <div class="grid-stack-item-content">
+<div class="relative cursor-grab h-full overflow-y-auto custom-scrollbar bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-xl">
+            <button
+              @click="toggleWidget('todo')"
+              title="Remove widget"
+              class="absolute top-1.5 right-1.5 text-slate-600 hover:text-red-500 transition-colors"
             >
-              <template x-for="news in hnStories" :key="news.id">
-                <a :href="news.url" target="_blank" class="block group">
-                  <p
-                    class="text-xs text-slate-300 group-hover:text-blue-400 leading-tight transition-colors"
-                    x-text="news.title"
-                  ></p>
-                  <div
-                    class="flex space-x-2 mt-1 text-[9px] text-slate-500 font-mono"
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor" x-html="icons.x"></svg>
+            </button>
+            <h3
+              class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4"
+            >
+              To-do
+            </h3>
+            <input
+              type="text"
+              x-model="newTodo"
+              @keyup.enter="addTodo"
+              placeholder="Add a task..."
+              class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:ring-2 focus:ring-blue-500 focus:outline-hidden mb-3"
+            />
+            <div class="flex flex-col gap-2">
+              <template x-for="(t, i) in todos" :key="i">
+                <div class="flex items-center gap-2 text-xs">
+                  <input
+                    type="checkbox"
+                    x-model="t.done"
+                    @change="saveTodos()"
+                    class="accent-blue-500"
+                  />
+                  <span
+                    class="flex-1 break-words"
+                    :class="t.done ? 'line-through text-slate-500' : 'text-slate-200'"
+                    x-text="t.text"
+                  ></span>
+                  <button
+                    @click="removeTodo(i)"
+                    title="Delete task"
+                    class="text-slate-600 hover:text-red-500 transition-colors"
                   >
-                    <span x-text="news.score + 'pts'"></span>
-                    <span x-text="'by ' + news.by"></span>
-                  </div>
-                </a>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor" x-html="icons.x"></svg>
+                  </button>
+                </div>
               </template>
             </div>
+          </div>
+          </div>
+        </div>
+        <div class="grid-stack-item" data-widget="beszel">
+          <div class="grid-stack-item-content">
+<div class="relative cursor-grab h-full overflow-y-auto custom-scrollbar bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-xl">
+            <button
+              @click="openWidgetSettings('beszel')"
+              title="Settings"
+              class="absolute top-1.5 right-6 text-slate-600 hover:text-blue-400 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x-html="icons.pencil"></svg>
+            </button>
+            <button
+              @click="toggleWidget('beszel')"
+              title="Remove widget"
+              class="absolute top-1.5 right-1.5 text-slate-600 hover:text-red-500 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor" x-html="icons.x"></svg>
+            </button>
+            <h3
+              class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4"
+            >
+              Beszel
+            </h3>
+            <p x-show="bzError" class="text-xs text-red-500 mb-2" x-text="bzError"></p>
+            <template x-if="!bzConnected">
+              <button
+                @click="openBeszelLogin()"
+                class="w-full py-2 bg-blue-600 rounded-lg text-xs font-bold"
+              >
+                Connect Beszel
+              </button>
+            </template>
+            <template x-if="bzConnected">
+              <div>
+                <p x-show="!bzSystems.length && !bzError" class="text-xs text-slate-500">No systems shared with this user</p>
+                <div class="flex flex-col gap-3">
+                  <template x-for="s in bzSystems" :key="s.id">
+                    <div>
+                      <div class="flex items-center gap-2 text-xs">
+                        <span class="h-2 w-2 rounded-full shrink-0" :class="bzColor(s.status)" :title="s.status"></span>
+                        <a :href="localStorage.getItem('beszel_url') + '/system/' + encodeURIComponent(s.name)" target="_blank" rel="noopener" class="flex-1 truncate text-slate-200 hover:text-blue-500 transition-colors" x-text="s.name"></a>
+                        <span class="text-[9px] font-mono text-slate-500" x-text="s.status === 'up' ? uptimeText(s.info.u) : s.status"></span>
+                      </div>
+                      <div x-show="s.status === 'up'" class="mt-1 pl-4 flex gap-3 text-[9px] font-mono">
+                        <span :class="usageClass(s.info.cpu)" x-text="'CPU ' + pct(s.info.cpu)"></span>
+                        <span :class="usageClass(s.info.mp)" x-text="'MEM ' + pct(s.info.mp)"></span>
+                        <span :class="usageClass(s.info.dp)" x-text="'DISK ' + pct(s.info.dp)"></span>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+                <button
+                  @click="disconnectBeszel()"
+                  class="mt-3 text-[9px] text-slate-500 hover:text-red-500 transition-colors"
+                >
+                  Disconnect
+                </button>
+              </div>
+            </template>
+          </div>
+          </div>
+        </div>
+        <div class="grid-stack-item" data-widget="buildkite">
+          <div class="grid-stack-item-content">
+<div class="relative cursor-grab h-full overflow-y-auto custom-scrollbar bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-xl">
+            <button
+              @click="openWidgetSettings('buildkite')"
+              title="Settings"
+              class="absolute top-1.5 right-6 text-slate-600 hover:text-blue-400 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x-html="icons.pencil"></svg>
+            </button>
+            <button
+              @click="toggleWidget('buildkite')"
+              title="Remove widget"
+              class="absolute top-1.5 right-1.5 text-slate-600 hover:text-red-500 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor" x-html="icons.x"></svg>
+            </button>
+            <h3
+              class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4"
+            >
+              Buildkite
+            </h3>
+            <template x-if="!bkConnected">
+              <button
+                @click="connectBuildkite()"
+                class="w-full py-2 bg-blue-600 rounded-lg text-xs font-bold"
+              >
+                Connect Buildkite
+              </button>
+            </template>
+            <template x-if="bkConnected">
+              <div>
+                <p x-show="bkError" class="text-xs text-red-500 mb-2" x-text="bkError"></p>
+                <div class="flex flex-col gap-3">
+                  <template x-for="b in builds" :key="b.pipeline.slug">
+                    <a :href="b.web_url" target="_blank" class="flex items-center gap-2 text-xs group">
+                      <span
+                        class="h-2 w-2 rounded-full shrink-0"
+                        :class="bkColor(b.state)"
+                        :title="b.state"
+                      ></span>
+                      <div class="min-w-0 flex-1">
+                        <span
+                          class="block truncate text-slate-200 group-hover:text-blue-400 transition-colors"
+                          x-text="b.pipeline.name"
+                        ></span>
+                        <span
+                          class="block truncate text-[9px] text-slate-500"
+                          x-text="b.branch + ' - ' + ago(b.created_at)"
+                        ></span>
+                      </div>
+                      <span class="font-mono text-[10px] text-slate-400" x-text="'#' + b.number"></span>
+                    </a>
+                  </template>
+                </div>
+                <button
+                  @click="disconnectBuildkite()"
+                  class="mt-3 text-[9px] text-slate-500 hover:text-red-500 transition-colors"
+                >
+                  Disconnect
+                </button>
+              </div>
+            </template>
+          </div>
           </div>
         </div>
       </div>
@@ -339,79 +1173,279 @@
       <footer
         class="mt-auto py-6 text-center text-[10px] text-slate-500 font-medium tracking-widest uppercase opacity-60"
       >
-        Made with <span class="text-red-500 animate-pulse">❤</span> using Gemini
-        3 Flash
+        Made with
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="inline h-3 w-3 text-red-500 animate-pulse"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+        >
+          <path
+            d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
+          />
+        </svg>
       </footer>
+      </div>
     </div>
 
     <script>
       function dashboard() {
+        let grid;
+        let lastDrag = 0;
+        let bkTimer, marketTimer, bzTimer;
+        const GRID_SIZE = { standard: { cell: 78, gap: 8 }, compact: { cell: 62, gap: 4 } };
+        const newsTimers = {};
+        let ready = false;
+        const save = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+        // one bad value in storage must not stop the page from starting: fall back when it
+        // cannot be read or has the wrong type
+        const load = (key, fallback) => {
+          try {
+            const v = JSON.parse(localStorage.getItem(key));
+            return v !== null && typeof v === typeof fallback && Array.isArray(v) === Array.isArray(fallback) ? v : fallback;
+          } catch {
+            return fallback;
+          }
+        };
+        // no crypto.randomUUID: it does not exist on plain http pages (e.g. a LAN address)
+        const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+        // clock time zones (IANA names); the browser's own zone comes first and is the default
+        const LOCAL_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const TIMEZONES = [...new Set([LOCAL_TZ, "UTC", "Europe/London", "Europe/Rome", "America/New_York", "America/Los_Angeles", "Asia/Dubai", "Asia/Tokyo", "Australia/Sydney"])];
+        const BOUNDS = {
+          service: { minW: 2, maxW: 6, minH: 1, maxH: 2 },
+          widget: { minW: 2, maxW: 6, minH: 2, maxH: 8 },
+        };
+        // default size in grid cells (12 columns, 78px rows)
+        const WIDGET_SIZES = {
+          market: { w: 3, h: 2 },
+          focus: { w: 3, h: 3 },
+          todo: { w: 3, h: 3 },
+          buildkite: { w: 3, h: 4 },
+          beszel: { w: 3, h: 3 },
+          search: { w: 4, h: 2 },
+        };
+        // First visit (nothing stored): start blank. Persist that now, otherwise the next load would
+        // find other keys (e.g. the cached location) but not these, and fall back to the defaults.
+        if (localStorage.length === 0) {
+          save("dash_services", []);
+          save("dash_widgets", []);
+          save("dash_news", []);
+        }
+        // News widgets are created on demand. An older install had one fixed Hacker News widget: keep it.
+        let newsWidgets = load("dash_news", []);
+        if (localStorage.getItem("dash_news") === null) {
+          const old = load("dash_widget_settings", {}).news || {};
+          newsWidgets = load("hidden_widgets", []).includes("news")
+            ? []
+            : [{ id: "news", source: "hn", count: old.count || 5, minutes: old.minutes || 10 }];
+          save("dash_news", newsWidgets);
+        }
+        // The widgets on the page are one list (nothing is shown until added). Older installs kept a
+        // "hidden" list (market and focus were on by default) and an "extras" list: merge them once.
+        const legacyWidgets = (hidden, extras) => [...["market", "focus"].filter((id) => !hidden.includes(id)), ...extras];
+        if (localStorage.getItem("dash_widgets") === null) {
+          save("dash_widgets", legacyWidgets(load("hidden_widgets", []), load("extra_widgets", [])));
+          localStorage.removeItem("hidden_widgets");
+          localStorage.removeItem("extra_widgets");
+        }
+        const rightBottom = () => Math.max(0, ...grid.engine.nodes.filter((n) => n.x + n.w > 9).map((n) => n.y + n.h));
+        const layout = load("dash_layout", {});
+        // a service saved before grid support has no id: derive a stable one
+        const withIds = (list) =>
+          list.filter((s) => s && typeof s === "object").map((s) => ({ ...s, id: s.id || s.name + "|" + s.url }));
+        const gridEl = () => document.getElementById("grid");
+        // the Focus card holds a fixed-size timer, keep it tall enough to show it
+        const EXTRA_BOUNDS = { focus: { minH: 3 } };
+        const place = (el, id, kind, fallback) =>
+          grid.makeWidget(el, { id, ...BOUNDS[kind], ...EXTRA_BOUNDS[id], ...(layout[id] || fallback) });
+        // merge into the saved layout so widgets that are hidden keep their last position
+        const saveLayout = () => {
+          if (grid.getColumn() !== 12) return; // single column mode is not a layout to keep
+          // read the nodes, not grid.save(): save() leaves out default values such as h: 1
+          grid.engine.nodes.forEach((n) => (layout[n.id] = { x: n.x, y: n.y, w: n.w, h: n.h }));
+          save("dash_layout", layout);
+        };
         return {
-          search: "",
           ip: "",
           temp: null,
-          weatherIcon: "☁️",
+          weatherLabel: "",
+          // Lucide icon paths, keyed by the labels from getWeatherLabel
+          weatherIcons: {
+            Clear:
+              '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
+            Cloudy: '<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>',
+            Fog: '<path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242M16 17H7M17 21H9"/>',
+            Rain: '<path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242M16 14v6M8 14v6M12 16v6"/>',
+            Snow: '<path d="M2 12h20M12 2v20m8-6-4-4 4-4M4 8l4 4-4 4m12-12-4 4-4-4M8 20l4-4 4 4"/>',
+            Storm:
+              '<path d="M6 16.326A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 .5 8.973M13 12l-3 5h4l-3 5"/>',
+          },
+          // shared button icons, drawn with x-html like the weather icons
+          icons: {
+            x: '<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>',
+            clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+            search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+            pencil: '<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+          },
           city: "Locating...",
           mapUrl: "#",
           currentTime: "",
+          now: new Date(), // read by tzLabel so the offsets follow daylight saving changes while the page stays open
+          timezones: TIMEZONES,
+          timezone: TIMEZONES.includes(load("dash_timezone", "")) ? load("dash_timezone", "") : LOCAL_TZ,
           batteryLevel: 0,
           batteryCharging: false,
           batterySupported: false,
-          connection: "Online",
+          connection: "",
           showStockModal: false,
+          showServiceModal: false,
+          showMenu: false,
+          showWidgets: false,
+          showTheme: false,
+          showLayout: false,
+          showTemp: false,
+          themes: ["dark", "light", "midnight", "forest"],
+          // layout size: row height and gap of the grid, in pixels
+          tempUnits: { C: "Celsius", F: "Fahrenheit" },
+          tempUnit: load("dash_temp_unit", "C") === "F" ? "F" : "C",
+          densities: { standard: "Standard", compact: "Compact" },
+          density: document.documentElement.dataset.density || "standard",
+          theme: document.documentElement.dataset.theme || "dark",
+          // CoinGecko ids and display names for the supported coins
+          cryptoIds: {
+            BTC: ["bitcoin", "Bitcoin"],
+            ETH: ["ethereum", "Ethereum"],
+            SOL: ["solana", "Solana"],
+            XRP: ["ripple", "XRP"],
+            ADA: ["cardano", "Cardano"],
+            DOGE: ["dogecoin", "Dogecoin"],
+            LTC: ["litecoin", "Litecoin"],
+            BNB: ["binancecoin", "BNB"],
+            DOT: ["polkadot", "Polkadot"],
+            LINK: ["chainlink", "Chainlink"],
+          },
+          cryptoSigns: { USD: "$", EUR: "€", GBP: "£" },
+          cryptoQuick: ["BTC / USD", "BTC / EUR", "ETH / USD", "ETH / EUR", "SOL / USD", "XRP / USD"],
+          status: {},
+          widgets: load("dash_widgets", []),
+          todos: load("dash_todos", []).filter((t) => t && typeof t.text === "string"),
+          newTodo: "",
+          searchQuery: "",
+          // past searches stay in this browser only: not part of the export
+          searchHistory: load("search_history", []).filter((q) => typeof q === "string"),
+          showSearchHistory: false,
+          // per-widget display settings (Hacker News and Buildkite), edited with the pencil icon
+          settingsLimits: {
+            market: { minutes: [1, 1440] },
+            buildkite: { count: [1, 50], minutes: [1, 1440] },
+            beszel: { minutes: [1, 1440] },
+            focus: { work: [1, 180], rest: [1, 60] },
+          },
+          settingsFields: {
+            market: [["minutes", "Refresh every (minutes)"]],
+            buildkite: [["count", "Items to display"], ["minutes", "Refresh every (minutes)"]],
+            beszel: [["minutes", "Refresh every (minutes)"]],
+            focus: [["work", "Focus (minutes)"], ["rest", "Break (minutes)"]],
+          },
+          settings: (() => {
+            const saved = load("dash_widget_settings", {});
+            return {
+              market: { minutes: 30, ...saved.market },
+              buildkite: { count: 10, minutes: 1, ...saved.buildkite },
+              beszel: { minutes: 1, ...saved.beszel },
+              focus: { work: 25, rest: 5, ...saved.focus },
+            };
+          })(),
+          widgetSettings: null,
+          settingsForm: { count: 5, minutes: 1 },
+          builds: [],
+          bzConnected: !!(localStorage.getItem("beszel_url") && localStorage.getItem("beszel_token")),
+          bzSystems: [],
+          bzError: "",
+          showBeszelModal: false,
+          bzForm: { url: "", email: "", password: "" },
+          bzLoginError: "",
+          armedStock: null,
+          stockDrag: null,
+          bkError: "",
+          fhConnected: !!localStorage.getItem("finnhub_token"),
+          bkConnected: !!localStorage.getItem("buildkite_token"),
+          showConfig: false,
+          newService: { name: "", description: "", url: "" },
+          editingService: null,
           newTicker: "",
-          stocks: JSON.parse(localStorage.getItem("dash_stocks")) || [
-            { symbol: "AAPL", price: 0, change: 0 },
-          ],
-          hnStories: [],
+          widgetNames: { market: "Market Watch", focus: "Focus", news: "News", todo: "To-do", buildkite: "Buildkite", beszel: "Beszel", search: "Search" },
+          stocks: load("dash_stocks", [{ symbol: "AAPL", price: 0, change: 0 }]).filter((s) => s && typeof s.symbol === "string"),
+          newsWidgets,
+          newsStories: {},
+          newsErrors: {},
+          // news sources: feeds that allow requests from a web page (checked 2026-10-28). Several addresses are merged.
+          newsSources: {
+            hn: { name: "Hacker News" },
+            sole: { name: "Il Sole 24 Ore", urls: ["https://www.ilsole24ore.com/rss/italia.xml"] },
+            ilpost: {
+              name: "Il Post Italia & Mondo",
+              urls: ["https://www.ilpost.it/italia/feed/", "https://www.ilpost.it/mondo/feed/"],
+            },
+          },
+          newsLimits: { count: [1, 20], minutes: [1, 1440] },
           pomoMinutes: 25,
           breakMinutes: 5,
           pomoSeconds: 1500,
+          pomoEnd: 0,
           pomoRunning: false,
           isBreak: false,
 
-          services: [
-            {
-              name: "Jellyfin",
-              url: "http://192.168.1.2:8096",
-              description: "Video streaming",
-            },
-            {
-              name: "Wealthfolio",
-              url: "http://192.168.1.2:8088",
-              description: "Portfolio manager",
-            },
-            {
-              name: "BentoPDF",
-              url: "http://192.168.1.2:8585",
-              description: "PDF Toolkit",
-            },
-            {
-              name: "Czkawka",
-              url: "http://192.168.1.2:5800",
-              description: "Image dedup",
-            },
-            {
-              name: "Portainer",
-              url: "http://192.168.1.2:9000",
-              description: "Container manager",
-            },
-            {
-              name: "Beszel",
-              url: "http://192.168.178.130:8090",
-              description: "System monitor",
-            },
-          ],
+          services: withIds(load("dash_services", [])),
 
           async init() {
+            this.applyFocusSettings();
+            if (this.newsWidgets.some((w) => !Object.hasOwn(this.newsSources, w.source))) {
+              this.newsWidgets.forEach((w) => Object.hasOwn(this.newsSources, w.source) || (w.source = "sole"));
+              save("dash_news", this.newsWidgets);
+            }
+            grid = GridStack.init(
+              {
+                column: 12,
+                cellHeight: GRID_SIZE[this.density].cell,
+                margin: GRID_SIZE[this.density].gap,
+                float: true, // cards stay where they are dropped, gaps allowed
+                animate: true,
+                resizable: { handles: "se" },
+                draggable: { cancel: "input, textarea, select, button" },
+                columnOpts: { breakpoints: [{ w: 768, c: 1 }] },
+              },
+              "#grid",
+            );
+            grid.on("change added removed", saveLayout);
+            grid.on("dragstop resizestop", () => (lastDrag = Date.now()));
+            // a drag or resize must not also follow the link under the pointer
+            gridEl().addEventListener(
+              "click",
+              (e) => {
+                if (Date.now() - lastDrag < 300) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }
+              },
+              true,
+            );
+            this.$nextTick(() => {
+              ready = true;
+              this.syncWidgets();
+            });
+            // Show the last known location right away; the fresh lookup below overwrites it
+            const loc = load("dash_location", {});
+            if (loc.city) Object.assign(this, { city: loc.city, mapUrl: loc.mapUrl, temp: loc.temp, weatherLabel: loc.weatherLabel });
             this.updateTime();
+            this.checkServices();
+            this.fetchBuildkite();
+            this.fetchBeszel();
             setInterval(() => this.updateTime(), 1000);
-            this.fetchHN();
             this.updateMarket();
-            setInterval(() => {
-              this.fetchHN();
-              this.updateMarket();
-            }, 60000);
+            setInterval(() => this.checkServices(), 60000);
+            this.scheduleRefresh();
 
             // Battery API handling
             if (navigator.getBattery) {
@@ -432,59 +1466,545 @@
 
             this.connection = navigator.connection
               ? navigator.connection.effectiveType.toUpperCase()
-              : "ONLINE";
+              : "";
 
             fetch("https://api.ipify.org?format=json")
               .then((r) => r.json())
               .then((d) => (this.ip = d.ip));
+            // no cached city and no answer: say so instead of "Locating..." forever
+            const noLocation = () => {
+              if (this.city === "Locating...") this.city = "Location off";
+            };
             navigator.geolocation.getCurrentPosition(async (pos) => {
-              const { latitude, longitude } = pos.coords;
-              this.mapUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
-              const geo = await fetch(
-                `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`,
-              ).then((r) => r.json());
-              this.city = geo.city || geo.locality || "Local Area";
-              const w = await fetch(
-                `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`,
-              ).then((r) => r.json());
-              this.temp = Math.round(w.current_weather.temperature);
-              this.weatherIcon = this.getWeatherEmoji(
-                w.current_weather.weathercode,
-              );
-            });
-
-            this.$watch("pomoMinutes", (v) => {
-              if (!this.pomoRunning) this.pomoSeconds = v * 60;
-            });
+              try {
+                const { latitude, longitude } = pos.coords;
+                this.mapUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+                const geo = await fetch(
+                  `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`,
+                ).then((r) => r.json());
+                this.city = geo.city || geo.locality || "Local Area";
+                const w = await fetch(
+                  `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`,
+                ).then((r) => r.json());
+                this.temp = w.current_weather.temperature; // Celsius, converted when shown
+                this.weatherLabel = this.getWeatherLabel(
+                  w.current_weather.weathercode,
+                );
+                const { city, mapUrl, temp, weatherLabel } = this;
+                save("dash_location", { city, mapUrl, temp, weatherLabel });
+              } catch (e) {
+                noLocation();
+              }
+            }, noLocation);
           },
 
           // Stocks
+          moveStock(over) {
+            const from = this.stocks.findIndex((s) => s.symbol === this.stockDrag);
+            const to = this.stocks.findIndex((s) => s.symbol === over);
+            if (from < 0 || to < 0 || from === to) return;
+            this.stocks.splice(to, 0, this.stocks.splice(from, 1)[0]);
+          },
+          get hasStocks() {
+            return this.stocks.some((s) => !this.parseCrypto(s.symbol));
+          },
+          connectFinnhub() {
+            const token = (prompt("Finnhub API token") || "").trim();
+            if (!token) return;
+            localStorage.setItem("finnhub_token", token);
+            this.fhConnected = true;
+            this.updateMarket();
+          },
+          disconnectFinnhub() {
+            localStorage.removeItem("finnhub_token");
+            this.fhConnected = false;
+          },
+          parseCrypto(symbol) {
+            const m = /^([A-Z0-9]+)\s*[/-]\s*(USD|EUR|GBP)$/i.exec(symbol.trim());
+            const coin = m && this.cryptoIds[m[1].toUpperCase()];
+            return coin && { id: coin[0], name: coin[1], base: m[1].toUpperCase(), cur: m[2].toUpperCase() };
+          },
+          currencySign(s) {
+            const c = this.parseCrypto(s.symbol);
+            return c ? this.cryptoSigns[c.cur] : "$";
+          },
+          updateCrypto() {
+            const rows = this.stocks.map((s) => [s, this.parseCrypto(s.symbol)]).filter(([, c]) => c);
+            if (!rows.length) return;
+            const uniq = (f) => [...new Set(rows.map(([, c]) => f(c)))].join(",");
+            fetch(
+              `https://api.coingecko.com/api/v3/simple/price?ids=${uniq((c) => c.id)}&vs_currencies=${uniq((c) => c.cur.toLowerCase())}&include_24hr_change=true`,
+            )
+              .then((r) => r.json())
+              .then((d) =>
+                rows.forEach(([s, c]) => {
+                  const vs = c.cur.toLowerCase();
+                  const p = d[c.id][vs];
+                  s.price = p >= 1 ? p.toFixed(2) : p.toPrecision(3);
+                  s.change = d[c.id][vs + "_24h_change"].toFixed(2);
+                }),
+              )
+              .catch(() => rows.forEach(([s]) => (s.price = "ERR")));
+          },
           async updateMarket() {
-            const proxy = "https://corsproxy.io/?";
-            this.stocks.forEach(async (s, i) => {
+            this.updateCrypto();
+            const stocks = this.stocks.filter((s) => !this.parseCrypto(s.symbol));
+            // Finnhub token is kept in localStorage, never in the page source
+            const token = localStorage.getItem("finnhub_token");
+            if (!stocks.length || !token) return;
+            stocks.forEach(async (s) => {
               try {
-                const target = `https://query1.finance.yahoo.com/v8/finance/chart/${s.symbol}?interval=1m&range=1d`;
-                const res = await fetch(
-                  proxy + encodeURIComponent(target),
+                const q = await fetch(
+                  `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(s.symbol)}&token=${token}`,
                 ).then((r) => r.json());
-                if (res.chart.result) {
-                  const meta = res.chart.result[0].meta;
-                  this.stocks[i].price = meta.regularMarketPrice.toFixed(2);
-                  const pc = meta.previousClose;
-                  this.stocks[i].change = (
-                    ((meta.regularMarketPrice - pc) / pc) *
-                    100
-                  ).toFixed(2);
-                }
+                s.price = q.c.toFixed(2);
+                s.change = q.dp.toFixed(2);
               } catch (e) {
-                this.stocks[i].price = "ERR";
+                s.price = "ERR";
+              }
+              if (!s.name) {
+                try {
+                  const p = await fetch(
+                    `https://finnhub.io/api/v1/stock/profile2?symbol=${encodeURIComponent(s.symbol)}&token=${token}`,
+                  ).then((r) => r.json());
+                  s.name = p.name;
+                  this.saveStocks();
+                } catch (e) {}
               }
             });
           },
+          confirmAddService() {
+            const { name, description, url } = this.newService;
+            if (!name.trim() || !/^https?:\/\//i.test(url.trim())) return;
+            const svc = {
+              id: uid(),
+              name: name.trim(),
+              description: description.trim(),
+              url: url.trim(),
+            };
+            if (this.editingService) Object.assign(this.editingService, { ...svc, id: this.editingService.id });
+            else this.services.push(svc);
+            save("dash_services", this.services);
+            this.showServiceModal = false;
+            this.checkServices();
+          },
+          // Only these keys are exported/imported: no API token, no location
+          configKeys: [
+            "dash_services",
+            "dash_stocks",
+            "dash_widgets",
+            "dash_todos",
+            "dash_theme",
+            "dash_density",
+            "dash_temp_unit",
+            "dash_timezone",
+            "dash_layout",
+            "dash_widget_settings",
+            "dash_news",
+          ],
+          exportConfig() {
+            const data = {};
+            this.configKeys.forEach((k) => {
+              try {
+                const v = localStorage.getItem(k);
+                if (v !== null) data[k] = JSON.parse(v);
+              } catch {} // a value that cannot be read is left out of the export
+            });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(
+              new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }),
+            );
+            a.download = "voidboard-config.json";
+            a.click();
+            URL.revokeObjectURL(a.href);
+          },
+          // Imported files are not trusted: the same rules as the add forms, and sane ranges.
+          validConfig(k, v) {
+            const str = (x, max = 200) => typeof x === "string" && x.length > 0 && x.length <= max;
+            const int = (n, lo, hi) => Number.isInteger(n) && n >= lo && n <= hi;
+            const unique = (a) => new Set(a).size === a.length;
+            const object = (x) => x && typeof x === "object" && !Array.isArray(x);
+            const widgetIds = Object.keys(this.widgetNames);
+            switch (k) {
+              case "dash_theme":
+                return this.themes.includes(v);
+              case "dash_density":
+                return Object.hasOwn(this.densities, v);
+              case "dash_temp_unit":
+                return Object.hasOwn(this.tempUnits, v);
+              case "dash_timezone":
+                return this.timezones.includes(v);
+              case "dash_services":
+                return (
+                  Array.isArray(v) &&
+                  v.every(
+                    (s) =>
+                      str(s?.name) &&
+                      typeof s.url === "string" && s.url.length <= 2000 && /^https?:\/\//i.test(s.url) &&
+                      (s.description === undefined || (typeof s.description === "string" && s.description.length <= 500)) &&
+                      (s.id === undefined || (str(s.id, 2500) && s.id !== "__proto__")),
+                  ) &&
+                  unique(v.map((s) => s.id ?? s.name + "|" + s.url))
+                );
+              case "dash_stocks":
+                return (
+                  Array.isArray(v) &&
+                  v.every((s) => str(s?.symbol, 30) && (s.name === undefined || typeof s.name === "string")) &&
+                  unique(v.map((s) => s.symbol))
+                );
+              case "dash_widgets":
+                // news widgets are instances of dash_news, not part of this list
+                return Array.isArray(v) && v.every((id) => id !== "news" && widgetIds.includes(id)) && unique(v);
+              case "dash_todos":
+                return Array.isArray(v) && v.every((t) => str(t?.text, 500) && typeof t.done === "boolean");
+              case "dash_layout":
+                return (
+                  object(v) &&
+                  Object.values(v).every((l) => int(l?.x, 0, 11) && int(l?.y, 0, 1000) && int(l?.w, 1, 12) && int(l?.h, 1, 40))
+                );
+              case "dash_news":
+                return (
+                  Array.isArray(v) &&
+                  unique(v.map((w) => w?.id)) &&
+                  v.every(
+                    (w) =>
+                      str(w?.id, 60) && /^[\w-]+$/.test(w.id) && (w.id === "news" || !Object.hasOwn(this.widgetNames, w.id)) &&
+                      Object.hasOwn(this.newsSources, w.source) &&
+                      int(w.count, 1, this.newsLimits.count[1]) &&
+                      int(w.minutes, 1, this.newsLimits.minutes[1]),
+                  )
+                );
+              case "dash_widget_settings":
+                return (
+                  object(v) &&
+                  Object.entries(v).every(
+                    ([id, o]) =>
+                      id === "news" || // legacy entry from before news widgets were created on demand
+                      (this.settingsLimits[id] &&
+                        this.settingsFields[id].every(([p]) => int(o?.[p], 1, this.settingsLimits[id][p][1]))),
+                  )
+                );
+            }
+            return false;
+          },
+          async importConfig(e) {
+            const file = e.target.files[0];
+            e.target.value = "";
+            if (!file) return;
+            try {
+              const data = JSON.parse(await file.text());
+              // a file exported before the widget lists were merged
+              if (!("dash_widgets" in data) && Array.isArray(data.hidden_widgets ?? []) && Array.isArray(data.extra_widgets ?? []) && ("hidden_widgets" in data || "extra_widgets" in data))
+                data.dash_widgets = legacyWidgets(data.hidden_widgets ?? [], data.extra_widgets ?? []);
+              const keys = Object.keys(data).filter(
+                (k) =>
+                  this.configKeys.includes(k) &&
+                  this.validConfig(k, data[k]),
+              );
+              if (!keys.length) throw new Error("no config found");
+              keys.forEach((k) => save(k, data[k]));
+              location.reload();
+            } catch (err) {
+              alert("Invalid configuration file");
+            }
+          },
+          editService(item) {
+            this.editingService = item;
+            this.newService = { ...item };
+            this.showServiceModal = true;
+          },
+          get availableWidgets() {
+            // "news" can be added any number of times, the others only when they are not on the page
+            return Object.keys(this.widgetNames).filter((id) => id === "news" || !this.widgets.includes(id));
+          },
+          setTempUnit(u) {
+            this.tempUnit = u;
+            save("dash_temp_unit", u);
+          },
+          tempText() {
+            return Math.round(this.tempUnit === "F" ? (this.temp * 9) / 5 + 32 : this.temp) + "°" + this.tempUnit;
+          },
+          setDensity(d) {
+            this.density = document.documentElement.dataset.density = d;
+            save("dash_density", d);
+            grid.cellHeight(GRID_SIZE[d].cell);
+            grid.margin(GRID_SIZE[d].gap);
+          },
+          setTheme(t) {
+            this.theme = document.documentElement.dataset.theme = t;
+            save("dash_theme", t);
+          },
+          addWidget(id) {
+            if (id === "news") this.addNewsWidget();
+            else this.toggleWidget(id);
+            this.showMenu = this.showWidgets = this.showConfig = false;
+          },
+          toggleWidget(id) {
+            if (id === "focus" && this.widgets.includes(id)) this.resetPomo(); // a hidden timer would keep running and beep
+            this.widgets = this.widgets.includes(id) ? this.widgets.filter((w) => w !== id) : [...this.widgets, id];
+            save("dash_widgets", this.widgets);
+            this.$nextTick(() => this.syncWidgets());
+          },
+          bkColor(state) {
+            return (
+              {
+                passed: "bg-emerald-500",
+                failed: "bg-red-500",
+                running: "bg-blue-500 animate-pulse",
+                scheduled: "bg-blue-500",
+                blocked: "bg-amber-500",
+              }[state] || "bg-slate-500"
+            );
+          },
+          ago(iso) {
+            const m = Math.max(0, Math.round((Date.now() - new Date(iso)) / 60000));
+            if (Number.isNaN(m)) return ""; // a date the browser cannot read
+            return m < 60 ? m + "m ago" : m < 1440 ? Math.round(m / 60) + "h ago" : Math.round(m / 1440) + "d ago";
+          },
+          // Token and org live in localStorage, never in the page source; use a read-only token
+          connectBuildkite() {
+            const token = (prompt("Buildkite API token (read-only)") || "").trim();
+            const org = token && (prompt("Buildkite organization slug", "3w") || "").trim();
+            if (!org) return;
+            localStorage.setItem("buildkite_token", token);
+            localStorage.setItem("buildkite_org", org);
+            this.bkConnected = true;
+            this.fetchBuildkite();
+          },
+          disconnectBuildkite() {
+            localStorage.removeItem("buildkite_token");
+            localStorage.removeItem("buildkite_org");
+            this.bkConnected = false;
+            this.builds = [];
+            this.bkError = "";
+          },
+          async fetchBuildkite() {
+            const token = localStorage.getItem("buildkite_token");
+            if (!token || !this.widgets.includes("buildkite")) return;
+            try {
+              const res = await fetch(
+                `https://api.buildkite.com/v2/organizations/${encodeURIComponent(localStorage.getItem("buildkite_org"))}/builds?per_page=100&exclude_jobs=true`,
+                { headers: { Authorization: `Bearer ${token}` } },
+              );
+              if (!res.ok) throw new Error(res.status === 401 || res.status === 403 ? "Invalid token or missing scope" : "Buildkite error " + res.status);
+              // newest first, so the first build seen per pipeline is the latest one
+              const latest = new Map();
+              (await res.json()).forEach((b) => latest.has(b.pipeline.slug) || latest.set(b.pipeline.slug, b));
+              this.builds = [...latest.values()].slice(0, this.settings.buildkite.count);
+              this.bkError = "";
+            } catch (e) {
+              this.bkError = e.message;
+            }
+          },
+          // Beszel: log in once, keep only the token (never the password). Systems are read with it.
+          bzColor(status) {
+            return { up: "bg-emerald-500", down: "bg-red-500", pending: "bg-amber-500" }[status] || "bg-slate-500";
+          },
+          pct(v) {
+            return Number.isFinite(v) ? Math.round(v) + "%" : "-";
+          },
+          usageClass(v) {
+            return v >= 90 ? "text-red-500" : v >= 75 ? "text-amber-500" : "text-slate-400";
+          },
+          uptimeText(s) {
+            if (!Number.isFinite(s)) return "";
+            return s >= 86400 ? Math.floor(s / 86400) + "d" : s >= 3600 ? Math.floor(s / 3600) + "h" : Math.floor(s / 60) + "m";
+          },
+          openBeszelLogin() {
+            this.bzForm = { url: localStorage.getItem("beszel_url") || "", email: "", password: "" };
+            this.bzLoginError = "";
+            this.showBeszelModal = true;
+          },
+          async loginBeszel() {
+            const base = this.bzForm.url.trim().replace(/\/+$/, "");
+            if (!/^https?:\/\/\S+$/i.test(base) || !this.bzForm.email.trim() || !this.bzForm.password) {
+              this.bzLoginError = "Enter the hub address (http://...), your email and your password";
+              return;
+            }
+            try {
+              const res = await fetch(`${base}/api/collections/users/auth-with-password`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ identity: this.bzForm.email.trim(), password: this.bzForm.password }),
+              });
+              if (!res.ok) throw new Error(res.status === 400 ? "Wrong email or password" : "Beszel error " + res.status);
+              localStorage.setItem("beszel_url", base);
+              localStorage.setItem("beszel_token", (await res.json()).token);
+              this.bzForm.password = "";
+              this.bzConnected = true;
+              this.showBeszelModal = false;
+              this.fetchBeszel();
+            } catch (e) {
+              this.bzLoginError = e instanceof TypeError ? "Could not reach the hub. Check the address, and that this page may call it (http hubs cannot be called from an https page)." : e.message;
+            }
+          },
+          disconnectBeszel() {
+            localStorage.removeItem("beszel_url");
+            localStorage.removeItem("beszel_token");
+            this.bzConnected = false;
+            this.bzSystems = [];
+            this.bzError = "";
+          },
+          async fetchBeszel() {
+            const base = localStorage.getItem("beszel_url");
+            const token = localStorage.getItem("beszel_token");
+            if (!base || !token || !this.widgets.includes("beszel")) return;
+            try {
+              // An expired token is treated like a guest and gets an empty list, not an error, so refresh first:
+              // it tells the two cases apart and keeps the session alive.
+              const refresh = await fetch(`${base}/api/collections/users/auth-refresh`, { method: "POST", headers: { Authorization: token } });
+              if (refresh.status >= 400 && refresh.status < 500) {
+                this.disconnectBeszel();
+                this.bzError = "Session expired, connect again";
+                return;
+              }
+              if (!refresh.ok) throw new Error("Beszel error " + refresh.status);
+              localStorage.setItem("beszel_token", (await refresh.json()).token);
+              const res = await fetch(`${base}/api/collections/systems/records?perPage=200&sort=name`, {
+                headers: { Authorization: localStorage.getItem("beszel_token") },
+              });
+              if (!res.ok) throw new Error("Beszel error " + res.status);
+              this.bzSystems = (await res.json()).items.map(({ id, name, status, info }) => ({ id, name, status, info: info || {} }));
+              this.bzError = "";
+            } catch (e) {
+              this.bzError = "Could not reach the hub";
+            }
+          },
+          // udm=50 opens Google's AI Mode
+          runSearch(q) {
+            q = q.trim();
+            if (!q) return;
+            this.searchHistory = [q, ...this.searchHistory.filter((h) => h !== q)].slice(0, 20);
+            save("search_history", this.searchHistory);
+            this.searchQuery = "";
+            this.showSearchHistory = false;
+            window.open("https://www.google.com/search?udm=50&q=" + encodeURIComponent(q), "_blank", "noopener");
+          },
+          clearSearchHistory() {
+            this.searchHistory = [];
+            save("search_history", []);
+          },
+          addTodo() {
+            const text = this.newTodo.trim();
+            if (!text) return;
+            this.todos.push({ text, done: false });
+            this.newTodo = "";
+            this.saveTodos();
+          },
+          removeTodo(i) {
+            this.todos.splice(i, 1);
+            this.saveTodos();
+          },
+          saveTodos() {
+            save("dash_todos", this.todos);
+          },
+          // no-cors: any answer (even an HTTP error) means reachable; only network failures and timeouts count as down
+          checkServices() {
+            this.services.forEach((s) =>
+              fetch(s.url, { mode: "no-cors", cache: "no-store", signal: AbortSignal.timeout(5000) })
+                .then(() => (this.status[s.url] = "up"))
+                .catch(() => (this.status[s.url] = "down")),
+            );
+          },
+          addService(el, id, i) {
+            // first paint: 3 per row in the left 9 columns; later additions go to the first free spot
+            place(el, id, "service", ready ? { w: 3, h: 1, autoPosition: true } : { x: (i % 3) * 3, y: Math.floor(i / 3), w: 3, h: 1 });
+          },
+          removeService(item) {
+            const el = grid.getGridItems().find((e) => e.gridstackNode.id === item.id);
+            if (el) grid.removeWidget(el, false); // Alpine removes the DOM node
+            delete layout[item.id];
+            save("dash_layout", layout);
+            this.services = this.services.filter((s) => s !== item);
+            save("dash_services", this.services);
+          },
+          widgetShown(id) {
+            return this.widgets.includes(id);
+          },
+          syncWidgets() {
+            const stash = document.getElementById("stash");
+            document.querySelectorAll("[data-widget]").forEach((el) => {
+              const id = el.dataset.widget;
+              const inGrid = el.parentElement === gridEl();
+              if (this.widgetShown(id) && !inGrid) {
+                gridEl().appendChild(el);
+                // no saved spot: stack under whatever already sits in the right-hand columns
+                place(el, id, "widget", { x: 9, y: rightBottom(), ...WIDGET_SIZES[id] });
+                if (id === "buildkite") this.fetchBuildkite();
+                if (id === "beszel") this.fetchBeszel();
+              } else if (!this.widgetShown(id) && inGrid) {
+                grid.removeWidget(el, false);
+                stash.appendChild(el);
+              }
+            });
+          },
+          scheduleRefresh() {
+            clearInterval(marketTimer);
+            clearInterval(bkTimer);
+            clearInterval(bzTimer);
+            bzTimer = setInterval(() => this.fetchBeszel(), this.settings.beszel.minutes * 60000);
+            marketTimer = setInterval(() => this.updateMarket(), this.settings.market.minutes * 60000);
+            bkTimer = setInterval(() => this.fetchBuildkite(), this.settings.buildkite.minutes * 60000);
+          },
+          openWidgetSettings(id) {
+            this.settingsForm = { ...(this.newsWidgets.find((w) => w.id === id) || this.settings[id]) };
+            this.widgetSettings = id;
+          },
+          isNews(id) {
+            return this.newsWidgets.some((w) => w.id === id);
+          },
+          // dialog fields as [key, label, options?]: options turns the field into a selector
+          fieldsFor(id) {
+            if (this.isNews(id))
+              return [["source", "Source", Object.keys(this.newsSources)], ["count", "Items to display"], ["minutes", "Refresh every (minutes)"]];
+            return this.settingsFields[id] || [];
+          },
+          limitsFor(id) {
+            return this.isNews(id) ? this.newsLimits : this.settingsLimits[id];
+          },
+          settingsTitle() {
+            const id = this.widgetSettings;
+            if (!id) return "";
+            return (this.isNews(id) ? "News" : this.widgetNames[id]) + " settings";
+          },
+          saveWidgetSettings() {
+            const id = this.widgetSettings;
+            const clamp = (v, [lo, hi], fallback) => Math.min(hi, Math.max(lo, Math.round(Number(v)) || fallback));
+            if (this.isNews(id)) {
+              const w = this.newsWidgets.find((x) => x.id === id);
+              const f = this.settingsForm;
+              if (Object.hasOwn(this.newsSources, f.source)) w.source = f.source;
+              w.count = clamp(f.count, this.newsLimits.count, w.count);
+              w.minutes = clamp(f.minutes, this.newsLimits.minutes, w.minutes);
+              save("dash_news", this.newsWidgets);
+              this.widgetSettings = null;
+              this.fetchNews(w);
+              this.scheduleNews(w);
+              return;
+            }
+            this.settings[id] = Object.fromEntries(
+              this.settingsFields[id].map(([k]) => [k, clamp(this.settingsForm[k], this.settingsLimits[id][k], this.settings[id][k])]),
+            );
+            save("dash_widget_settings", this.settings);
+            this.widgetSettings = null;
+            if (id === "focus") return this.applyFocusSettings();
+            this.scheduleRefresh();
+            if (id === "market") this.updateMarket();
+            else if (id === "beszel") this.fetchBeszel();
+            else this.fetchBuildkite();
+          },
+          applyFocusSettings() {
+            this.pomoMinutes = this.settings.focus.work;
+            this.breakMinutes = this.settings.focus.rest;
+            // a running countdown keeps its current value, the new length applies from the next phase
+            if (!this.pomoRunning) this.pomoSeconds = (this.isBreak ? this.breakMinutes : this.pomoMinutes) * 60;
+          },
           confirmAddStock() {
             let t = this.newTicker.trim().toUpperCase();
-            if (t) {
-              this.stocks.push({ symbol: t, price: 0, change: 0 });
+            const c = this.parseCrypto(t);
+            if (c) t = `${c.base} / ${c.cur}`;
+            if (t && !this.stocks.some((s) => s.symbol === t)) {
+              this.stocks.push({ symbol: t, price: 0, change: 0, ...(c && { name: c.name }) });
               this.saveStocks();
               this.updateMarket();
               this.showStockModal = false;
@@ -495,7 +2015,7 @@
             this.saveStocks();
           },
           saveStocks() {
-            localStorage.setItem("dash_stocks", JSON.stringify(this.stocks));
+            save("dash_stocks", this.stocks);
           },
 
           // Pomodoro
@@ -503,18 +2023,26 @@
             if (this.pomoRunning) {
               clearInterval(this.pomoInterval);
               this.pomoRunning = false;
+              this.pomoSeconds = Math.max(0, Math.ceil((this.pomoEnd - Date.now()) / 1000));
             } else {
               this.pomoRunning = true;
-              this.pomoInterval = setInterval(() => {
-                if (this.pomoSeconds > 0) this.pomoSeconds--;
-                else {
-                  this.playAlarm();
-                  this.isBreak = !this.isBreak;
-                  this.pomoSeconds =
-                    (this.isBreak ? this.breakMinutes : this.pomoMinutes) * 60;
-                }
-              }, 1000);
+              this.pomoEnd = Date.now() + this.pomoSeconds * 1000;
+              this.pomoInterval = setInterval(() => this.tickPomo(), 500);
             }
+          },
+          // Time is read from the clock, not counted tick by tick: a hidden tab runs timers slowly, the clock does not.
+          tickPomo() {
+            let left = Math.ceil((this.pomoEnd - Date.now()) / 1000);
+            if (left <= 0) {
+              this.playAlarm();
+              // a tab that woke up late stays on the original schedule
+              while (left <= 0) {
+                this.isBreak = !this.isBreak;
+                this.pomoEnd += (this.isBreak ? this.breakMinutes : this.pomoMinutes) * 60000;
+                left = Math.ceil((this.pomoEnd - Date.now()) / 1000);
+              }
+            }
+            this.pomoSeconds = left;
           },
           resetPomo() {
             clearInterval(this.pomoInterval);
@@ -536,39 +2064,112 @@
           },
 
           // News
-          async fetchHN() {
+          addNewsWidget() {
+            this.newsWidgets.push({ id: "news-" + uid(), source: "hn", count: 5, minutes: 10 });
+            save("dash_news", this.newsWidgets);
+          },
+          // called once per news card when it enters the page: place it, load it, keep it fresh
+          addNews(el, id) {
+            const w = this.newsWidgets.find((x) => x.id === id);
+            place(el, id, "widget", { x: 9, y: rightBottom(), w: 3, h: 5 });
+            this.fetchNews(w);
+            this.scheduleNews(w);
+          },
+          removeNews(w) {
+            clearInterval(newsTimers[w.id]);
+            delete newsTimers[w.id];
+            const el = grid.getGridItems().find((e) => e.gridstackNode.id === w.id);
+            if (el) grid.removeWidget(el, false); // Alpine removes the DOM node
+            delete layout[w.id];
+            save("dash_layout", layout);
+            delete this.newsStories[w.id];
+            delete this.newsErrors[w.id];
+            this.newsWidgets = this.newsWidgets.filter((x) => x.id !== w.id);
+            save("dash_news", this.newsWidgets);
+          },
+          scheduleNews(w) {
+            clearInterval(newsTimers[w.id]);
+            newsTimers[w.id] = setInterval(() => this.fetchNews(w), w.minutes * 60000);
+          },
+          async fetchNews(w) {
+            const source = w.source;
+            let partial = false;
             try {
-              const ids = await fetch(
-                "https://hacker-news.firebaseio.com/v0/topstories.json",
-              ).then((r) => r.json());
-              this.hnStories = await Promise.all(
-                ids
-                  .slice(0, 5)
-                  .map((id) =>
-                    fetch(
-                      `https://hacker-news.firebaseio.com/v0/item/${id}.json`,
-                    ).then((r) => r.json()),
-                  ),
-              );
-            } catch (e) {}
+              let items;
+              if (source === "hn") {
+                const ids = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json").then((r) => r.json());
+                const stories = await Promise.all(
+                  ids.slice(0, w.count).map((id) => fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).then((r) => r.json())),
+                );
+                items = stories.map((n) => ({
+                  id: n.id,
+                  title: n.title,
+                  url: n.url || `https://news.ycombinator.com/item?id=${n.id}`,
+                  meta: `${n.score}pts by ${n.by}`,
+                }));
+              } else {
+                // every address is read on its own: one that fails does not hide the others
+                const results = await Promise.allSettled(
+                  this.newsSources[source].urls.map(async (url) => {
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error("HTTP " + res.status);
+                    // some feeds start with a blank line, which strict XML parsing refuses
+                    const xml = new DOMParser().parseFromString((await res.text()).trim(), "text/xml");
+                    if (xml.querySelector("parsererror")) throw new Error("not valid XML");
+                    return [...xml.querySelectorAll("item")].map((el) => {
+                      const t = (tag) => el.querySelector(tag)?.textContent.trim() || "";
+                      return { id: t("guid") || t("link"), title: t("title"), url: t("link"), date: t("pubDate") };
+                    });
+                  }),
+                );
+                if (results.every((r) => r.status === "rejected")) throw results[0].reason;
+                partial = results.some((r) => r.status === "rejected");
+                const time = (n) => Date.parse(n.date) || 0; // no readable date: last
+                // same story in two feeds is shown once, newest first, then cut to the wanted number
+                items = [...new Map(results.flatMap((r) => r.value ?? []).map((n) => [n.url, n])).values()]
+                  .filter((n) => /^https?:\/\//i.test(n.url))
+                  .sort((a, b) => time(b) - time(a))
+                  .slice(0, w.count)
+                  .map((n) => ({ ...n, meta: n.date ? this.ago(n.date) : "" }));
+              }
+              if (w.source !== source) return; // the source was changed while this request was running
+              // links come from a third party: only plain web links
+              this.newsStories[w.id] = items.filter((n) => /^https?:\/\//i.test(n.url));
+              this.newsErrors[w.id] = partial ? "Part of this feed could not be loaded" : "";
+            } catch (e) {
+              if (w.source === source) this.newsErrors[w.id] = "Could not load this feed";
+            }
           },
 
+          // offset from UTC right now, e.g. "UTC+1"
+          tzOffset(tz) {
+            const part = new Intl.DateTimeFormat("en-GB", { timeZone: tz, timeZoneName: "shortOffset" })
+              .formatToParts(this.now)
+              .find((p) => p.type === "timeZoneName").value;
+            return part.replace("GMT", "UTC") + (part === "GMT" ? "+0" : "");
+          },
+          setTimezone() {
+            save("dash_timezone", this.timezone);
+            this.updateTime();
+          },
           updateTime() {
-            this.currentTime = new Date().toLocaleTimeString("en-GB", {
+            this.now = new Date();
+            this.currentTime = this.now.toLocaleTimeString("en-GB", {
+              timeZone: this.timezone,
               hour: "2-digit",
               minute: "2-digit",
               second: "2-digit",
               hour12: false,
             });
           },
-          getWeatherEmoji(c) {
-            const m = { 0: "☀️", 1: "🌤️", 3: "☁️", 61: "🌧️", 95: "⛈️" };
-            return m[c] || "☁️";
-          },
-          get filteredServices() {
-            return this.services.filter((s) =>
-              s.name.toLowerCase().includes(this.search.toLowerCase()),
-            );
+          // WMO weather codes as returned by Open-Meteo
+          getWeatherLabel(c) {
+            if (c === 0) return "Clear";
+            if (c <= 3) return "Cloudy";
+            if (c <= 48) return "Fog";
+            if (c <= 67 || (c >= 80 && c <= 82)) return "Rain";
+            if (c <= 77 || (c >= 85 && c <= 86)) return "Snow";
+            return "Storm";
           },
         };
       }
